@@ -76,7 +76,7 @@ uv add shieldgents
 
 ### From source
 ```bash
-git clone https://github.com/yourusername/shieldgents.git
+git clone https://github.com/Mehranmzn/shieldgents.git
 cd shieldgents
 uv sync
 ```
