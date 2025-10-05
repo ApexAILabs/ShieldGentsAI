@@ -734,7 +734,7 @@ We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md) f
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/shieldgents.git
+git clone https://github.com/ApexAILabs/shieldgents.git
 cd shieldgents
 
 # Install with dev dependencies
