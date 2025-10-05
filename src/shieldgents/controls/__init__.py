@@ -57,6 +57,15 @@ from shieldgents.controls.content_safety import (
     ContentSafetyAlert,
     MisuseType,
 )
+from shieldgents.controls.model_drift import (
+    ModelDriftDetector,
+    ModelIntegrityMonitor,
+    ModelVersionControl,
+    DriftAlert,
+    IntegrityAlert,
+    DriftType,
+    IntegrityThreat,
+)
 
 __all__ = [
     # Access control
@@ -107,4 +116,12 @@ __all__ = [
     "ContentSafetyFilter",
     "ContentSafetyAlert",
     "MisuseType",
+    # Model drift and integrity
+    "ModelDriftDetector",
+    "ModelIntegrityMonitor",
+    "ModelVersionControl",
+    "DriftAlert",
+    "IntegrityAlert",
+    "DriftType",
+    "IntegrityThreat",
 ]
