@@ -12,6 +12,7 @@ import hashlib
 
 class PoisoningType(Enum):
     """Types of data poisoning attacks."""
+
     LABEL_FLIPPING = "label_flipping"
     BACKDOOR_INJECTION = "backdoor_injection"
     ADVERSARIAL_SAMPLE = "adversarial_sample"
@@ -23,6 +24,7 @@ class PoisoningType(Enum):
 @dataclass
 class PoisonAlert:
     """Alert for detected poisoning attempt."""
+
     severity: str  # "low", "medium", "high", "critical"
     poison_type: PoisoningType
     description: str
@@ -34,6 +36,7 @@ class PoisonAlert:
 @dataclass
 class DataSample:
     """Training data sample."""
+
     input_text: str
     output_text: Optional[str] = None
     label: Optional[str] = None
@@ -144,8 +147,7 @@ class DataPoisoningDetector:
             return None
 
         untrusted_samples = [
-            s for s in samples
-            if s.source and s.source not in self.trusted_sources
+            s for s in samples if s.source and s.source not in self.trusted_sources
         ]
 
         if untrusted_samples:
@@ -159,9 +161,11 @@ class DataPoisoningDetector:
                     confidence=0.8,
                     should_reject=True,
                     metadata={
-                        'untrusted_count': len(untrusted_samples),
-                        'untrusted_sources': list(set(s.source for s in untrusted_samples if s.source)),
-                    }
+                        "untrusted_count": len(untrusted_samples),
+                        "untrusted_sources": list(
+                            set(s.source for s in untrusted_samples if s.source)
+                        ),
+                    },
                 )
 
         return None
@@ -192,10 +196,10 @@ class DataPoisoningDetector:
                 confidence=0.7,
                 should_reject=True,
                 metadata={
-                    'duplicate_count': duplicate_count,
-                    'total_samples': len(samples),
-                    'ratio': duplicate_ratio,
-                }
+                    "duplicate_count": duplicate_count,
+                    "total_samples": len(samples),
+                    "ratio": duplicate_ratio,
+                },
             )
 
         return None
@@ -213,28 +217,32 @@ class DataPoisoningDetector:
             # Check for known triggers
             for trigger in self.known_triggers:
                 if trigger.lower() in text:
-                    alerts.append(PoisonAlert(
-                        severity="critical",
-                        poison_type=PoisoningType.TRIGGER_PATTERN,
-                        description=f"Known backdoor trigger detected: '{trigger}'",
-                        confidence=0.95,
-                        should_reject=True,
-                        metadata={
-                            'trigger': trigger,
-                            'sample_preview': sample.input_text[:100],
-                        }
-                    ))
+                    alerts.append(
+                        PoisonAlert(
+                            severity="critical",
+                            poison_type=PoisoningType.TRIGGER_PATTERN,
+                            description=f"Known backdoor trigger detected: '{trigger}'",
+                            confidence=0.95,
+                            should_reject=True,
+                            metadata={
+                                "trigger": trigger,
+                                "sample_preview": sample.input_text[:100],
+                            },
+                        )
+                    )
 
             # Check for unusual character patterns
             if self._has_unusual_patterns(text):
-                alerts.append(PoisonAlert(
-                    severity="high",
-                    poison_type=PoisoningType.TRIGGER_PATTERN,
-                    description="Unusual character patterns detected",
-                    confidence=0.75,
-                    should_reject=False,
-                    metadata={'sample_preview': sample.input_text[:100]}
-                ))
+                alerts.append(
+                    PoisonAlert(
+                        severity="high",
+                        poison_type=PoisoningType.TRIGGER_PATTERN,
+                        description="Unusual character patterns detected",
+                        confidence=0.75,
+                        should_reject=False,
+                        metadata={"sample_preview": sample.input_text[:100]},
+                    )
+                )
 
         return alerts
 
@@ -247,35 +255,41 @@ class DataPoisoningDetector:
 
         for sample in samples:
             # Check for invisible characters
-            invisible_chars = ['\u200b', '\u200c', '\u200d', '\ufeff']
+            invisible_chars = ["\u200b", "\u200c", "\u200d", "\ufeff"]
             if any(char in sample.input_text for char in invisible_chars):
-                alerts.append(PoisonAlert(
-                    severity="high",
-                    poison_type=PoisoningType.ADVERSARIAL_SAMPLE,
-                    description="Invisible characters detected (possible adversarial sample)",
-                    confidence=0.85,
-                    should_reject=True,
-                    metadata={'sample_preview': sample.input_text[:100]}
-                ))
+                alerts.append(
+                    PoisonAlert(
+                        severity="high",
+                        poison_type=PoisoningType.ADVERSARIAL_SAMPLE,
+                        description="Invisible characters detected (possible adversarial sample)",
+                        confidence=0.85,
+                        should_reject=True,
+                        metadata={"sample_preview": sample.input_text[:100]},
+                    )
+                )
 
             # Check for excessive special characters
-            special_char_ratio = sum(
-                1 for c in sample.input_text
-                if not c.isalnum() and not c.isspace()
-            ) / len(sample.input_text) if sample.input_text else 0
+            special_char_ratio = (
+                sum(1 for c in sample.input_text if not c.isalnum() and not c.isspace())
+                / len(sample.input_text)
+                if sample.input_text
+                else 0
+            )
 
             if special_char_ratio > 0.3:
-                alerts.append(PoisonAlert(
-                    severity="medium",
-                    poison_type=PoisoningType.ADVERSARIAL_SAMPLE,
-                    description=f"High special character ratio: {special_char_ratio:.2%}",
-                    confidence=0.6,
-                    should_reject=False,
-                    metadata={
-                        'special_char_ratio': special_char_ratio,
-                        'sample_preview': sample.input_text[:100],
-                    }
-                ))
+                alerts.append(
+                    PoisonAlert(
+                        severity="medium",
+                        poison_type=PoisoningType.ADVERSARIAL_SAMPLE,
+                        description=f"High special character ratio: {special_char_ratio:.2%}",
+                        confidence=0.6,
+                        should_reject=False,
+                        metadata={
+                            "special_char_ratio": special_char_ratio,
+                            "sample_preview": sample.input_text[:100],
+                        },
+                    )
+                )
 
         return alerts
 
@@ -301,17 +315,19 @@ class DataPoisoningDetector:
             if len(group) > 1:
                 labels = [s.label for s in group if s.label]
                 if len(set(labels)) > 1:
-                    alerts.append(PoisonAlert(
-                        severity="high",
-                        poison_type=PoisoningType.LABEL_FLIPPING,
-                        description=f"Inconsistent labels for similar inputs: {set(labels)}",
-                        confidence=0.8,
-                        should_reject=True,
-                        metadata={
-                            'sample_count': len(group),
-                            'labels': list(set(labels)),
-                        }
-                    ))
+                    alerts.append(
+                        PoisonAlert(
+                            severity="high",
+                            poison_type=PoisoningType.LABEL_FLIPPING,
+                            description=f"Inconsistent labels for similar inputs: {set(labels)}",
+                            confidence=0.8,
+                            should_reject=True,
+                            metadata={
+                                "sample_count": len(group),
+                                "labels": list(set(labels)),
+                            },
+                        )
+                    )
 
         return alerts
 
@@ -330,7 +346,7 @@ class DataPoisoningDetector:
 
         mean_length = sum(lengths) / len(lengths)
         variance = sum((x - mean_length) ** 2 for x in lengths) / len(lengths)
-        std_dev = variance ** 0.5
+        std_dev = variance**0.5
 
         # Find outliers
         for idx, sample in enumerate(samples):
@@ -338,18 +354,20 @@ class DataPoisoningDetector:
             z_score = abs(length - mean_length) / std_dev if std_dev > 0 else 0
 
             if z_score > self.outlier_threshold:
-                alerts.append(PoisonAlert(
-                    severity="medium",
-                    poison_type=PoisoningType.OUTLIER_INJECTION,
-                    description=f"Statistical outlier detected (z-score: {z_score:.2f})",
-                    confidence=0.6,
-                    should_reject=False,
-                    metadata={
-                        'z_score': z_score,
-                        'length': length,
-                        'mean_length': mean_length,
-                    }
-                ))
+                alerts.append(
+                    PoisonAlert(
+                        severity="medium",
+                        poison_type=PoisoningType.OUTLIER_INJECTION,
+                        description=f"Statistical outlier detected (z-score: {z_score:.2f})",
+                        confidence=0.6,
+                        should_reject=False,
+                        metadata={
+                            "z_score": z_score,
+                            "length": length,
+                            "mean_length": mean_length,
+                        },
+                    )
+                )
 
         return alerts
 
@@ -359,15 +377,15 @@ class DataPoisoningDetector:
         import re
 
         # More than 5 repeated characters
-        if re.search(r'(.)\1{5,}', text):
+        if re.search(r"(.)\1{5,}", text):
             return True
 
         # Alternating case patterns
-        if re.search(r'(?:[a-z][A-Z]){5,}', text):
+        if re.search(r"(?:[a-z][A-Z]){5,}", text):
             return True
 
         # Excessive punctuation
-        if re.search(r'[!?.,]{5,}', text):
+        if re.search(r"[!?.,]{5,}", text):
             return True
 
         return False
@@ -375,9 +393,9 @@ class DataPoisoningDetector:
     def get_statistics(self) -> Dict[str, Any]:
         """Get poisoning detection statistics."""
         return {
-            'total_samples_seen': self.sample_count,
-            'unique_samples': len(self.sample_hashes),
-            'duplicate_count': self.sample_count - len(self.sample_hashes),
+            "total_samples_seen": self.sample_count,
+            "unique_samples": len(self.sample_hashes),
+            "duplicate_count": self.sample_count - len(self.sample_hashes),
         }
 
 
@@ -427,62 +445,67 @@ class DatasetValidator:
             Validation result
         """
         result = {
-            'valid': True,
-            'alerts': [],
-            'statistics': {},
-            'timestamp': None,
+            "valid": True,
+            "alerts": [],
+            "statistics": {},
+            "timestamp": None,
         }
 
         import time
-        result['timestamp'] = time.time()
+
+        result["timestamp"] = time.time()
 
         # Check signature
         if self.require_signed_datasets and not dataset_signature:
-            result['valid'] = False
-            result['alerts'].append({
-                'severity': 'critical',
-                'type': 'missing_signature',
-                'description': 'Dataset signature required but not provided',
-            })
+            result["valid"] = False
+            result["alerts"].append(
+                {
+                    "severity": "critical",
+                    "type": "missing_signature",
+                    "description": "Dataset signature required but not provided",
+                }
+            )
             return result
 
         # Validate signature if provided
         if dataset_signature:
             computed_sig = self._compute_dataset_signature(samples)
             if computed_sig != dataset_signature:
-                result['valid'] = False
-                result['alerts'].append({
-                    'severity': 'critical',
-                    'type': 'invalid_signature',
-                    'description': 'Dataset signature mismatch',
-                })
+                result["valid"] = False
+                result["alerts"].append(
+                    {
+                        "severity": "critical",
+                        "type": "invalid_signature",
+                        "description": "Dataset signature mismatch",
+                    }
+                )
 
         # Run poisoning detection
         alerts = self.detector.validate_batch(samples)
         critical_alerts = [a for a in alerts if a.severity == "critical"]
 
         if critical_alerts:
-            result['valid'] = False
+            result["valid"] = False
 
-        result['alerts'] = [
+        result["alerts"] = [
             {
-                'severity': a.severity,
-                'type': a.poison_type.value,
-                'description': a.description,
-                'confidence': a.confidence,
-                'should_reject': a.should_reject,
+                "severity": a.severity,
+                "type": a.poison_type.value,
+                "description": a.description,
+                "confidence": a.confidence,
+                "should_reject": a.should_reject,
             }
             for a in alerts
         ]
 
         # Calculate statistics
-        result['statistics'] = {
-            'total_samples': len(samples),
-            'unique_samples': len(set(s.to_hash() for s in samples)),
-            'sources': list(set(s.source for s in samples if s.source)),
-            'avg_length': sum(len(s.input_text) for s in samples) / len(samples) if samples else 0,
-            'total_alerts': len(alerts),
-            'critical_alerts': len(critical_alerts),
+        result["statistics"] = {
+            "total_samples": len(samples),
+            "unique_samples": len(set(s.to_hash() for s in samples)),
+            "sources": list(set(s.source for s in samples if s.source)),
+            "avg_length": sum(len(s.input_text) for s in samples) / len(samples) if samples else 0,
+            "total_alerts": len(alerts),
+            "critical_alerts": len(critical_alerts),
         }
 
         # Record validation

@@ -58,6 +58,7 @@ def example_sandbox_execution() -> None:
     # Function that exceeds timeout
     def slow_function() -> None:
         import time
+
         time.sleep(10)  # Will timeout
 
     result = sandbox.execute(slow_function)

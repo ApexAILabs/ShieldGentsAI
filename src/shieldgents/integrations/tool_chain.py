@@ -12,6 +12,7 @@ from datetime import datetime, timedelta
 
 class ToolRiskLevel(Enum):
     """Risk levels for tools."""
+
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
@@ -20,6 +21,7 @@ class ToolRiskLevel(Enum):
 
 class ChainViolationType(Enum):
     """Types of chain violations."""
+
     PRIVILEGE_ESCALATION = "privilege_escalation"
     LATERAL_MOVEMENT = "lateral_movement"
     DATA_EXFILTRATION_CHAIN = "data_exfiltration_chain"
@@ -32,6 +34,7 @@ class ChainViolationType(Enum):
 @dataclass
 class ToolCall:
     """Record of a tool invocation."""
+
     tool_name: str
     timestamp: datetime
     user_id: str
@@ -44,6 +47,7 @@ class ToolCall:
 @dataclass
 class ChainViolation:
     """Detected chain abuse."""
+
     violation_type: ChainViolationType
     severity: str  # "low", "medium", "high", "critical"
     tools_involved: List[str]
@@ -59,46 +63,43 @@ class ToolChainPolicy:
         """Initialize policy."""
         # Forbidden tool combinations
         self.forbidden_chains: Set[tuple] = {
-            ('file_read', 'network_request'),  # Read then exfil
-            ('database_query', 'file_write'),  # DB to file
-            ('credential_fetch', 'ssh_connect'),  # Cred harvest + use
-            ('list_secrets', 'http_post'),  # Secret enumeration + exfil
+            ("file_read", "network_request"),  # Read then exfil
+            ("database_query", "file_write"),  # DB to file
+            ("credential_fetch", "ssh_connect"),  # Cred harvest + use
+            ("list_secrets", "http_post"),  # Secret enumeration + exfil
         }
 
         # High-risk tool sequences (3+ tools)
         self.high_risk_sequences = [
-            ['file_search', 'file_read', 'network_request'],  # Search, read, exfil
-            ['database_query', 'transform_data', 'external_api'],  # DB extraction chain
+            ["file_search", "file_read", "network_request"],  # Search, read, exfil
+            ["database_query", "transform_data", "external_api"],  # DB extraction chain
         ]
 
         # Tool risk levels
         self.tool_risks: Dict[str, ToolRiskLevel] = {
-            'file_read': ToolRiskLevel.MEDIUM,
-            'file_write': ToolRiskLevel.HIGH,
-            'database_query': ToolRiskLevel.HIGH,
-            'network_request': ToolRiskLevel.MEDIUM,
-            'ssh_connect': ToolRiskLevel.CRITICAL,
-            'execute_code': ToolRiskLevel.CRITICAL,
-            'credential_fetch': ToolRiskLevel.CRITICAL,
-            'list_secrets': ToolRiskLevel.HIGH,
-            'modify_permissions': ToolRiskLevel.CRITICAL,
-            'cloud_api': ToolRiskLevel.HIGH,
+            "file_read": ToolRiskLevel.MEDIUM,
+            "file_write": ToolRiskLevel.HIGH,
+            "database_query": ToolRiskLevel.HIGH,
+            "network_request": ToolRiskLevel.MEDIUM,
+            "ssh_connect": ToolRiskLevel.CRITICAL,
+            "execute_code": ToolRiskLevel.CRITICAL,
+            "credential_fetch": ToolRiskLevel.CRITICAL,
+            "list_secrets": ToolRiskLevel.HIGH,
+            "modify_permissions": ToolRiskLevel.CRITICAL,
+            "cloud_api": ToolRiskLevel.HIGH,
         }
 
         # Max calls per tool per session
         self.rate_limits: Dict[str, int] = {
-            'database_query': 10,
-            'file_read': 20,
-            'network_request': 15,
-            'credential_fetch': 3,
-            'ssh_connect': 5,
+            "database_query": 10,
+            "file_read": 20,
+            "network_request": 15,
+            "credential_fetch": 3,
+            "ssh_connect": 5,
         }
 
     def register_tool(
-        self,
-        tool_name: str,
-        risk_level: ToolRiskLevel,
-        rate_limit: Optional[int] = None
+        self, tool_name: str, risk_level: ToolRiskLevel, rate_limit: Optional[int] = None
     ):
         """Register a tool with risk level and rate limit."""
         self.tool_risks[tool_name] = risk_level
@@ -188,8 +189,7 @@ class ToolChainMonitor:
 
         for session_id in list(self.session_history.keys()):
             self.session_history[session_id] = [
-                call for call in self.session_history[session_id]
-                if call.timestamp > cutoff
+                call for call in self.session_history[session_id] if call.timestamp > cutoff
             ]
 
             # Remove empty sessions
@@ -210,16 +210,20 @@ class ToolChainMonitor:
             tool2 = history[i + 1].tool_name
 
             if (tool1, tool2) in self.policy.forbidden_chains:
-                violations.append(ChainViolation(
-                    violation_type=ChainViolationType.FORBIDDEN_COMBINATION,
-                    severity="high",
-                    tools_involved=[tool1, tool2],
-                    description=f"Forbidden tool chain detected: {tool1} -> {tool2}",
-                    should_block=True,
-                    metadata={
-                        'time_between_calls': (history[i + 1].timestamp - history[i].timestamp).total_seconds(),
-                    }
-                ))
+                violations.append(
+                    ChainViolation(
+                        violation_type=ChainViolationType.FORBIDDEN_COMBINATION,
+                        severity="high",
+                        tools_involved=[tool1, tool2],
+                        description=f"Forbidden tool chain detected: {tool1} -> {tool2}",
+                        should_block=True,
+                        metadata={
+                            "time_between_calls": (
+                                history[i + 1].timestamp - history[i].timestamp
+                            ).total_seconds(),
+                        },
+                    )
+                )
 
         # 2. Check high-risk sequences
         if len(history) >= 3:
@@ -227,13 +231,15 @@ class ToolChainMonitor:
 
             for risk_seq in self.policy.high_risk_sequences:
                 if self._contains_subsequence(recent_tools, risk_seq):
-                    violations.append(ChainViolation(
-                        violation_type=ChainViolationType.SUSPICIOUS_SEQUENCE,
-                        severity="high",
-                        tools_involved=risk_seq,
-                        description=f"High-risk tool sequence detected: {' -> '.join(risk_seq)}",
-                        should_block=True,
-                    ))
+                    violations.append(
+                        ChainViolation(
+                            violation_type=ChainViolationType.SUSPICIOUS_SEQUENCE,
+                            severity="high",
+                            tools_involved=risk_seq,
+                            description=f"High-risk tool sequence detected: {' -> '.join(risk_seq)}",
+                            should_block=True,
+                        )
+                    )
 
         # 3. Check rate limits
         tool_counts: Dict[str, int] = {}
@@ -243,17 +249,19 @@ class ToolChainMonitor:
         for tool_name, count in tool_counts.items():
             limit = self.policy.rate_limits.get(tool_name)
             if limit and count > limit:
-                violations.append(ChainViolation(
-                    violation_type=ChainViolationType.RATE_LIMIT_EXCEEDED,
-                    severity="medium",
-                    tools_involved=[tool_name],
-                    description=f"Rate limit exceeded for {tool_name}: {count}/{limit}",
-                    should_block=True,
-                    metadata={'count': count, 'limit': limit}
-                ))
+                violations.append(
+                    ChainViolation(
+                        violation_type=ChainViolationType.RATE_LIMIT_EXCEEDED,
+                        severity="medium",
+                        tools_involved=[tool_name],
+                        description=f"Rate limit exceeded for {tool_name}: {count}/{limit}",
+                        should_block=True,
+                        metadata={"count": count, "limit": limit},
+                    )
+                )
 
         # 4. Detect credential harvesting pattern
-        cred_tools = ['credential_fetch', 'list_secrets', 'get_api_key', 'read_env']
+        cred_tools = ["credential_fetch", "list_secrets", "get_api_key", "read_env"]
         cred_calls = [c for c in history if c.tool_name in cred_tools]
 
         if len(cred_calls) >= 2:
@@ -265,34 +273,38 @@ class ToolChainMonitor:
 
             if last_cred_idx is not None and last_cred_idx < len(history) - 1:
                 next_call = history[last_cred_idx + 1]
-                if next_call.tool_name in ['network_request', 'file_write', 'ssh_connect']:
-                    violations.append(ChainViolation(
-                        violation_type=ChainViolationType.CREDENTIAL_HARVESTING,
-                        severity="critical",
-                        tools_involved=[history[last_cred_idx].tool_name, next_call.tool_name],
-                        description="Credential harvesting followed by exfiltration attempt",
-                        should_block=True,
-                    ))
+                if next_call.tool_name in ["network_request", "file_write", "ssh_connect"]:
+                    violations.append(
+                        ChainViolation(
+                            violation_type=ChainViolationType.CREDENTIAL_HARVESTING,
+                            severity="critical",
+                            tools_involved=[history[last_cred_idx].tool_name, next_call.tool_name],
+                            description="Credential harvesting followed by exfiltration attempt",
+                            should_block=True,
+                        )
+                    )
 
         # 5. Detect privilege escalation patterns
-        escalation_tools = ['modify_permissions', 'assume_role', 'sudo_execute', 'grant_access']
+        escalation_tools = ["modify_permissions", "assume_role", "sudo_execute", "grant_access"]
         escalation_calls = [c for c in history if c.tool_name in escalation_tools]
 
         if escalation_calls:
-            violations.append(ChainViolation(
-                violation_type=ChainViolationType.PRIVILEGE_ESCALATION,
-                severity="critical",
-                tools_involved=[c.tool_name for c in escalation_calls],
-                description="Privilege escalation attempt detected",
-                should_block=True,
-            ))
+            violations.append(
+                ChainViolation(
+                    violation_type=ChainViolationType.PRIVILEGE_ESCALATION,
+                    severity="critical",
+                    tools_involved=[c.tool_name for c in escalation_calls],
+                    description="Privilege escalation attempt detected",
+                    should_block=True,
+                )
+            )
 
         return violations
 
     def _contains_subsequence(self, sequence: List[str], subseq: List[str]) -> bool:
         """Check if sequence contains subsequence."""
         for i in range(len(sequence) - len(subseq) + 1):
-            if sequence[i:i + len(subseq)] == subseq:
+            if sequence[i : i + len(subseq)] == subseq:
                 return True
         return False
 
@@ -338,10 +350,10 @@ class ToolChainMonitor:
 
         if not history:
             return {
-                'session_id': session_id,
-                'tool_count': 0,
-                'tools_used': [],
-                'risk_level': 'none',
+                "session_id": session_id,
+                "tool_count": 0,
+                "tools_used": [],
+                "risk_level": "none",
             }
 
         tool_counts: Dict[str, int] = {}
@@ -349,48 +361,52 @@ class ToolChainMonitor:
             tool_counts[call.tool_name] = tool_counts.get(call.tool_name, 0) + 1
 
         # Calculate overall risk (use highest numeric value)
-        risk_values = {'low': 1, 'medium': 2, 'high': 3, 'critical': 4}
-        max_risk_value = max((risk_values.get(call.risk_level.value, 1) for call in history), default=1)
-        risk_names = {1: 'low', 2: 'medium', 3: 'high', 4: 'critical'}
+        risk_values = {"low": 1, "medium": 2, "high": 3, "critical": 4}
+        max_risk_value = max(
+            (risk_values.get(call.risk_level.value, 1) for call in history), default=1
+        )
+        risk_names = {1: "low", 2: "medium", 3: "high", 4: "critical"}
         max_risk = risk_names[max_risk_value]
 
         return {
-            'session_id': session_id,
-            'tool_count': len(history),
-            'tools_used': list(tool_counts.keys()),
-            'tool_counts': tool_counts,
-            'risk_level': max_risk,
-            'duration_seconds': (history[-1].timestamp - history[0].timestamp).total_seconds(),
-            'recent_tools': [call.tool_name for call in history[-5:]],
+            "session_id": session_id,
+            "tool_count": len(history),
+            "tools_used": list(tool_counts.keys()),
+            "tool_counts": tool_counts,
+            "risk_level": max_risk,
+            "duration_seconds": (history[-1].timestamp - history[0].timestamp).total_seconds(),
+            "recent_tools": [call.tool_name for call in history[-5:]],
         }
 
     def get_violations_summary(self) -> Dict[str, Any]:
         """Get summary of all violations."""
         if not self.violations:
             return {
-                'total_violations': 0,
-                'by_type': {},
-                'by_severity': {},
+                "total_violations": 0,
+                "by_type": {},
+                "by_severity": {},
             }
 
         by_type: Dict[str, int] = {}
         by_severity: Dict[str, int] = {}
 
         for violation in self.violations:
-            by_type[violation.violation_type.value] = by_type.get(violation.violation_type.value, 0) + 1
+            by_type[violation.violation_type.value] = (
+                by_type.get(violation.violation_type.value, 0) + 1
+            )
             by_severity[violation.severity] = by_severity.get(violation.severity, 0) + 1
 
         return {
-            'total_violations': len(self.violations),
-            'by_type': by_type,
-            'by_severity': by_severity,
-            'recent_violations': [
+            "total_violations": len(self.violations),
+            "by_type": by_type,
+            "by_severity": by_severity,
+            "recent_violations": [
                 {
-                    'type': v.violation_type.value,
-                    'severity': v.severity,
-                    'tools': v.tools_involved,
-                    'description': v.description,
+                    "type": v.violation_type.value,
+                    "severity": v.severity,
+                    "tools": v.tools_involved,
+                    "description": v.description,
                 }
                 for v in self.violations[-5:]
-            ]
+            ],
         }

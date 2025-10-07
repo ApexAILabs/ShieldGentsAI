@@ -13,6 +13,7 @@ import threading
 
 class EventType(Enum):
     """Types of security events."""
+
     PROMPT_INJECTION = "prompt_injection"
     RESOURCE_LIMIT = "resource_limit"
     PERMISSION_DENIED = "permission_denied"
@@ -25,6 +26,7 @@ class EventType(Enum):
 
 class Severity(Enum):
     """Event severity levels."""
+
     DEBUG = "debug"
     INFO = "info"
     WARNING = "warning"
@@ -35,6 +37,7 @@ class Severity(Enum):
 @dataclass
 class SecurityEvent:
     """Security event data structure."""
+
     event_type: EventType
     severity: Severity
     timestamp: float = field(default_factory=time.time)
@@ -209,7 +212,7 @@ class AnomalyDetector:
 
         mean = sum(history) / len(history)
         variance = sum((x - mean) ** 2 for x in history) / len(history)
-        std = variance ** 0.5
+        std = variance**0.5
 
         if std == 0:
             return value != mean

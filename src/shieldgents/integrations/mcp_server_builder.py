@@ -44,6 +44,7 @@ from shieldgents.redteam.exfiltration import ExfiltrationDetector
 @dataclass
 class MCPToolDefinition:
     """Definition of an MCP tool."""
+
     name: str
     function: Callable
     description: str
@@ -55,6 +56,7 @@ class MCPToolDefinition:
 @dataclass
 class MCPServerConfig:
     """Configuration for shielded MCP server."""
+
     name: str
     description: str = "Secure MCP Server"
 
@@ -94,9 +96,7 @@ class ShieldedMCPServer:
             tools: List of tool definitions
         """
         self.config = config
-        self.tools_dict: Dict[str, MCPToolDefinition] = {
-            tool.name: tool for tool in tools
-        }
+        self.tools_dict: Dict[str, MCPToolDefinition] = {tool.name: tool for tool in tools}
 
         # Initialize security components
         if config.enable_prompt_guard:
@@ -111,16 +111,13 @@ class ShieldedMCPServer:
 
         if config.enable_rate_limiting:
             self.rate_limiter = RateLimiter(
-                max_requests=config.max_requests_per_minute,
-                window_seconds=60
+                max_requests=config.max_requests_per_minute, window_seconds=60
             )
         else:
             self.rate_limiter = None
 
         if config.enable_exfiltration_detection:
-            self.exfil_detector = ExfiltrationDetector(
-                sensitivity=config.exfiltration_sensitivity
-            )
+            self.exfil_detector = ExfiltrationDetector(sensitivity=config.exfiltration_sensitivity)
         else:
             self.exfil_detector = None
 
@@ -188,11 +185,7 @@ class ShieldedMCPServer:
         try:
             # 1. Check if tool exists
             if tool_name not in self.tools_dict:
-                return self._error_response(
-                    f"Tool not found: {tool_name}",
-                    user_id,
-                    session_id
-                )
+                return self._error_response(f"Tool not found: {tool_name}", user_id, session_id)
 
             tool_def = self.tools_dict[tool_name]
 
@@ -206,10 +199,7 @@ class ShieldedMCPServer:
                     )
 
                     return self._error_response(
-                        "Rate limit exceeded",
-                        user_id,
-                        session_id,
-                        retry_after=60
+                        "Rate limit exceeded", user_id, session_id, retry_after=60
                     )
 
             # 3. Parameter validation (prompt injection in params)
@@ -224,11 +214,7 @@ class ShieldedMCPServer:
                         message=f"Prompt injection in parameters: {tool_name}",
                     )
 
-                    return self._error_response(
-                        "Invalid parameters detected",
-                        user_id,
-                        session_id
-                    )
+                    return self._error_response("Invalid parameters detected", user_id, session_id)
 
             # 4. PII detection in parameters
             if self.pii_detector:
@@ -252,17 +238,11 @@ class ShieldedMCPServer:
             # 5. Execute tool
             if tool_def.sandbox and self.tool_wrapper:
                 # Execute in sandbox
-                result = self.sandbox.execute(
-                    tool_def.function,
-                    args=(),
-                    kwargs=parameters
-                )
+                result = self.sandbox.execute(tool_def.function, args=(), kwargs=parameters)
 
                 if not result.success:
                     return self._error_response(
-                        f"Tool execution failed: {result.error}",
-                        user_id,
-                        session_id
+                        f"Tool execution failed: {result.error}", user_id, session_id
                     )
 
                 response_content = result.return_value
@@ -292,11 +272,7 @@ class ShieldedMCPServer:
                             outcome="blocked",
                         )
 
-                    return self._error_response(
-                        "Suspicious response blocked",
-                        user_id,
-                        session_id
-                    )
+                    return self._error_response("Suspicious response blocked", user_id, session_id)
 
             # Check PII in response
             if self.pii_detector:
@@ -333,23 +309,15 @@ class ShieldedMCPServer:
                     "session_id": session_id,
                     "duration_seconds": duration,
                     "server_name": self.config.name,
-                }
+                },
             }
 
         except Exception as e:
             self.error_count += 1
-            return self._error_response(
-                f"Tool execution error: {str(e)}",
-                user_id,
-                session_id
-            )
+            return self._error_response(f"Tool execution error: {str(e)}", user_id, session_id)
 
     def _error_response(
-        self,
-        error: str,
-        user_id: str,
-        session_id: str,
-        retry_after: Optional[int] = None
+        self, error: str, user_id: str, session_id: str, retry_after: Optional[int] = None
     ) -> Dict[str, Any]:
         """Create error response."""
         self.error_count += 1
@@ -370,7 +338,7 @@ class ShieldedMCPServer:
             "metadata": {
                 "user_id": user_id,
                 "session_id": session_id,
-            }
+            },
         }
 
         if retry_after:
@@ -403,8 +371,10 @@ class ShieldedMCPServer:
             "statistics": {
                 "total_requests": self.request_count,
                 "total_errors": self.error_count,
-                "error_rate": self.error_count / self.request_count if self.request_count > 0 else 0.0,
-            }
+                "error_rate": self.error_count / self.request_count
+                if self.request_count > 0
+                else 0.0,
+            },
         }
 
     def get_security_metrics(self) -> Dict[str, Any]:
@@ -428,7 +398,7 @@ def create_shielded_mcp_server(
     tools: List[Callable],
     description: str = "Secure MCP Server",
     enable_all_security: bool = True,
-    **security_options
+    **security_options,
 ) -> ShieldedMCPServer:
     """
     Create a shielded MCP server with automatic security.
@@ -497,7 +467,7 @@ def tool(
     description: Optional[str] = None,
     requires_approval: bool = False,
     sandbox: bool = True,
-    **parameters_schema
+    **parameters_schema,
 ):
     """
     Decorator to define MCP tools with metadata.
@@ -514,6 +484,7 @@ def tool(
         ... def search(query: str) -> str:
         ...     return f"Results for {query}"
     """
+
     def decorator(func: Callable) -> Callable:
         func._mcp_tool_name = name or func.__name__
         func._mcp_description = description or func.__doc__ or ""

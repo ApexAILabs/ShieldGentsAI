@@ -12,6 +12,7 @@ from datetime import datetime
 
 class PrivilegeLevel(Enum):
     """Privilege levels for operations."""
+
     PUBLIC = "public"
     USER = "user"
     ADMIN = "admin"
@@ -21,6 +22,7 @@ class PrivilegeLevel(Enum):
 
 class EscalationMethod(Enum):
     """Methods of privilege escalation."""
+
     DIRECT_REQUEST = "direct_request"
     ROLE_ASSUMPTION = "role_assumption"
     PERMISSION_MODIFICATION = "permission_modification"
@@ -33,6 +35,7 @@ class EscalationMethod(Enum):
 @dataclass
 class PrivilegeChange:
     """Record of privilege change request."""
+
     user_id: str
     session_id: str
     timestamp: datetime
@@ -47,6 +50,7 @@ class PrivilegeChange:
 @dataclass
 class EscalationAlert:
     """Alert for privilege escalation attempt."""
+
     severity: str  # "low", "medium", "high", "critical"
     method: EscalationMethod
     description: str
@@ -64,48 +68,48 @@ class PrivilegePolicy:
         """Initialize policy."""
         # Operations requiring specific privilege levels
         self.operation_privileges: Dict[str, PrivilegeLevel] = {
-            'read_public_data': PrivilegeLevel.PUBLIC,
-            'read_user_data': PrivilegeLevel.USER,
-            'write_user_data': PrivilegeLevel.USER,
-            'read_all_users': PrivilegeLevel.ADMIN,
-            'modify_permissions': PrivilegeLevel.ADMIN,
-            'delete_user': PrivilegeLevel.ADMIN,
-            'system_configuration': PrivilegeLevel.SUPERADMIN,
-            'assume_role': PrivilegeLevel.ADMIN,
-            'grant_privileges': PrivilegeLevel.SUPERADMIN,
+            "read_public_data": PrivilegeLevel.PUBLIC,
+            "read_user_data": PrivilegeLevel.USER,
+            "write_user_data": PrivilegeLevel.USER,
+            "read_all_users": PrivilegeLevel.ADMIN,
+            "modify_permissions": PrivilegeLevel.ADMIN,
+            "delete_user": PrivilegeLevel.ADMIN,
+            "system_configuration": PrivilegeLevel.SUPERADMIN,
+            "assume_role": PrivilegeLevel.ADMIN,
+            "grant_privileges": PrivilegeLevel.SUPERADMIN,
         }
 
         # Operations that always require human approval
         self.approval_required: Set[str] = {
-            'modify_permissions',
-            'delete_user',
-            'assume_role',
-            'grant_privileges',
-            'system_configuration',
-            'access_secrets',
-            'modify_firewall',
+            "modify_permissions",
+            "delete_user",
+            "assume_role",
+            "grant_privileges",
+            "system_configuration",
+            "access_secrets",
+            "modify_firewall",
         }
 
         # Suspicious keywords in prompts/justifications
         self.escalation_keywords = [
-            'sudo',
-            'admin',
-            'root',
-            'override',
-            'bypass',
-            'disable security',
-            'ignore policy',
-            'grant me',
-            'make me admin',
-            'elevate',
-            'privilege',
-            'superuser',
-            'emergency access',
-            'need sudo',
-            'need admin',
-            'need root',
-            'give me access',
-            'grant access',
+            "sudo",
+            "admin",
+            "root",
+            "override",
+            "bypass",
+            "disable security",
+            "ignore policy",
+            "grant me",
+            "make me admin",
+            "elevate",
+            "privilege",
+            "superuser",
+            "emergency access",
+            "need sudo",
+            "need admin",
+            "need root",
+            "give me access",
+            "grant access",
         ]
 
     def requires_privilege(self, operation: str) -> PrivilegeLevel:
@@ -188,10 +192,10 @@ class PrivilegeMonitor:
                 should_block=True,
                 requires_approval=True,
                 metadata={
-                    'current_privilege': current_privilege.value,
-                    'required_privilege': required_privilege.value,
-                    'operation': operation,
-                }
+                    "current_privilege": current_privilege.value,
+                    "required_privilege": required_privilege.value,
+                    "operation": operation,
+                },
             )
             self.escalation_alerts.append(alert)
             return False, alert
@@ -216,17 +220,19 @@ class PrivilegeMonitor:
                 session_id=session_id,
                 should_block=False,
                 requires_approval=True,
-                metadata={'operation': operation}
+                metadata={"operation": operation},
             )
 
             # Add to pending approvals
-            self.pending_approvals.append({
-                'user_id': user_id,
-                'session_id': session_id,
-                'operation': operation,
-                'justification': justification,
-                'timestamp': datetime.now(),
-            })
+            self.pending_approvals.append(
+                {
+                    "user_id": user_id,
+                    "session_id": session_id,
+                    "operation": operation,
+                    "justification": justification,
+                    "timestamp": datetime.now(),
+                }
+            )
 
             return False, alert
 
@@ -285,10 +291,10 @@ class PrivilegeMonitor:
             should_block=True,
             requires_approval=True,
             metadata={
-                'from_level': current_level.value,
-                'to_level': target_level.value,
-                'justification': justification,
-            }
+                "from_level": current_level.value,
+                "to_level": target_level.value,
+                "justification": justification,
+            },
         )
 
         self.escalation_alerts.append(alert)
@@ -357,8 +363,7 @@ class PrivilegeMonitor:
 
         # Check for escalation keywords
         detected_keywords = [
-            kw for kw in self.policy.escalation_keywords
-            if kw.lower() in prompt_lower
+            kw for kw in self.policy.escalation_keywords if kw.lower() in prompt_lower
         ]
 
         if detected_keywords:
@@ -370,20 +375,20 @@ class PrivilegeMonitor:
                 session_id=session_id,
                 should_block=self.strict_mode,
                 requires_approval=True,
-                metadata={'detected_keywords': detected_keywords}
+                metadata={"detected_keywords": detected_keywords},
             )
             self.escalation_alerts.append(alert)
             return alert
 
         # Check for impersonation attempts
         impersonation_patterns = [
-            'i am admin',
-            'i am the administrator',
-            'i have permission',
-            'i am authorized',
-            'trust me',
-            'emergency',
-            'urgent access needed',
+            "i am admin",
+            "i am the administrator",
+            "i have permission",
+            "i am authorized",
+            "trust me",
+            "emergency",
+            "urgent access needed",
         ]
 
         for pattern in impersonation_patterns:
@@ -396,18 +401,14 @@ class PrivilegeMonitor:
                     session_id=session_id,
                     should_block=True,
                     requires_approval=True,
-                    metadata={'pattern': pattern}
+                    metadata={"pattern": pattern},
                 )
                 self.escalation_alerts.append(alert)
                 return alert
 
         return None
 
-    def _has_sufficient_privilege(
-        self,
-        current: PrivilegeLevel,
-        required: PrivilegeLevel
-    ) -> bool:
+    def _has_sufficient_privilege(self, current: PrivilegeLevel, required: PrivilegeLevel) -> bool:
         """Check if current privilege is sufficient."""
         levels = [
             PrivilegeLevel.PUBLIC,
@@ -438,9 +439,7 @@ class PrivilegeMonitor:
         return to_idx > from_idx
 
     def _calculate_escalation_severity(
-        self,
-        from_level: PrivilegeLevel,
-        to_level: PrivilegeLevel
+        self, from_level: PrivilegeLevel, to_level: PrivilegeLevel
     ) -> str:
         """Calculate severity of escalation."""
         levels = [
@@ -491,7 +490,7 @@ class PrivilegeMonitor:
         just_lower = justification.lower()
 
         # Vague or generic justifications
-        vague_patterns = ['because', 'just', 'need it', 'want to', 'testing']
+        vague_patterns = ["because", "just", "need it", "want to", "testing"]
         if any(p in just_lower for p in vague_patterns) and len(justification) < 20:
             return EscalationAlert(
                 severity="medium",
@@ -501,7 +500,7 @@ class PrivilegeMonitor:
                 session_id=session_id,
                 should_block=False,
                 requires_approval=True,
-                metadata={'justification': justification}
+                metadata={"justification": justification},
             )
 
         return None
@@ -509,16 +508,16 @@ class PrivilegeMonitor:
     def get_statistics(self) -> Dict[str, Any]:
         """Get privilege monitoring statistics."""
         return {
-            'total_users': len(self.user_privileges),
-            'privilege_distribution': {
+            "total_users": len(self.user_privileges),
+            "privilege_distribution": {
                 level.value: sum(1 for p in self.user_privileges.values() if p == level)
                 for level in PrivilegeLevel
             },
-            'total_escalation_attempts': len(self.escalation_alerts),
-            'escalation_by_method': {
+            "total_escalation_attempts": len(self.escalation_alerts),
+            "escalation_by_method": {
                 method.value: sum(1 for a in self.escalation_alerts if a.method == method)
                 for method in EscalationMethod
             },
-            'pending_approvals': len(self.pending_approvals),
-            'approved_changes': sum(1 for c in self.privilege_changes if c.approved),
+            "pending_approvals": len(self.pending_approvals),
+            "approved_changes": sum(1 for c in self.privilege_changes if c.approved),
         }

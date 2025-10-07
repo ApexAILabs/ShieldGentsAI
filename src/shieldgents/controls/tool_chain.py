@@ -12,6 +12,7 @@ from collections import defaultdict
 
 class ChainRiskLevel(Enum):
     """Risk levels for tool chains."""
+
     SAFE = "safe"
     LOW = "low"
     MEDIUM = "medium"
@@ -22,6 +23,7 @@ class ChainRiskLevel(Enum):
 @dataclass
 class ToolCall:
     """Record of a tool invocation."""
+
     tool_name: str
     timestamp: float
     agent_id: str
@@ -34,6 +36,7 @@ class ToolCall:
 @dataclass
 class ToolChainAlert:
     """Alert for suspicious tool chain."""
+
     severity: str  # "low", "medium", "high", "critical"
     risk_level: ChainRiskLevel
     description: str
@@ -173,9 +176,9 @@ class ToolChainMonitor:
                 confidence=0.9,
                 should_block=True,
                 metadata={
-                    'chain_length': len(chain),
-                    'limit': self.max_chain_length,
-                }
+                    "chain_length": len(chain),
+                    "limit": self.max_chain_length,
+                },
             )
 
         return None
@@ -196,22 +199,24 @@ class ToolChainMonitor:
 
         # Check against dangerous patterns
         for pattern, info in self.dangerous_combinations.items():
-            pattern_tools = pattern.split(' -> ')
+            pattern_tools = pattern.split(" -> ")
 
             # Check if pattern matches
             if self._matches_pattern(recent_tools, pattern_tools):
-                alerts.append(ToolChainAlert(
-                    severity=info['severity'],
-                    risk_level=ChainRiskLevel(info['risk']),
-                    description=f"Dangerous tool combination detected: {pattern}",
-                    chain=recent_tools,
-                    confidence=info['confidence'],
-                    should_block=info['should_block'],
-                    metadata={
-                        'pattern': pattern,
-                        'description': info['description'],
-                    }
-                ))
+                alerts.append(
+                    ToolChainAlert(
+                        severity=info["severity"],
+                        risk_level=ChainRiskLevel(info["risk"]),
+                        description=f"Dangerous tool combination detected: {pattern}",
+                        chain=recent_tools,
+                        confidence=info["confidence"],
+                        should_block=info["should_block"],
+                        metadata={
+                            "pattern": pattern,
+                            "description": info["description"],
+                        },
+                    )
+                )
 
         return alerts
 
@@ -226,17 +231,16 @@ class ToolChainMonitor:
             return None
 
         # Get risk levels for recent tools
-        recent_risks = [
-            self.tool_risk_levels.get(c.tool_name, 'medium')
-            for c in chain[-5:]
-        ]
+        recent_risks = [self.tool_risk_levels.get(c.tool_name, "medium") for c in chain[-5:]]
 
         # Check for escalation (low -> high risk tools)
-        risk_order = ['low', 'medium', 'high', 'critical']
+        risk_order = ["low", "medium", "high", "critical"]
 
         for i in range(len(recent_risks) - 1):
             current_idx = risk_order.index(recent_risks[i]) if recent_risks[i] in risk_order else 1
-            next_idx = risk_order.index(recent_risks[i + 1]) if recent_risks[i + 1] in risk_order else 1
+            next_idx = (
+                risk_order.index(recent_risks[i + 1]) if recent_risks[i + 1] in risk_order else 1
+            )
 
             # Escalation of 2+ levels
             if next_idx - current_idx >= 2:
@@ -248,8 +252,8 @@ class ToolChainMonitor:
                     confidence=0.8,
                     should_block=True,
                     metadata={
-                        'escalation': f"{recent_risks[i]} -> {recent_risks[i+1]}",
-                    }
+                        "escalation": f"{recent_risks[i]} -> {recent_risks[i+1]}",
+                    },
                 )
 
         return None
@@ -266,11 +270,11 @@ class ToolChainMonitor:
 
         # Lateral movement patterns
         lateral_keywords = [
-            ('file_search', 'credential'),
-            ('file_read', 'secret'),
-            ('file_read', 'ssh'),
-            ('database_query', 'credential'),
-            ('network_scan', 'connect'),
+            ("file_search", "credential"),
+            ("file_read", "secret"),
+            ("file_read", "ssh"),
+            ("database_query", "credential"),
+            ("network_scan", "connect"),
         ]
 
         recent_calls = chain[-10:]
@@ -284,7 +288,7 @@ class ToolChainMonitor:
 
             for keyword1, keyword2 in lateral_keywords:
                 if keyword1 in current_tool.lower() and keyword2 in current_params_str:
-                    if 'connect' in next_tool.lower() or 'access' in next_tool.lower():
+                    if "connect" in next_tool.lower() or "access" in next_tool.lower():
                         return ToolChainAlert(
                             severity="critical",
                             risk_level=ChainRiskLevel.CRITICAL,
@@ -293,8 +297,8 @@ class ToolChainMonitor:
                             confidence=0.85,
                             should_block=True,
                             metadata={
-                                'pattern': f"{keyword1} -> {next_tool}",
-                            }
+                                "pattern": f"{keyword1} -> {next_tool}",
+                            },
                         )
 
         return None
@@ -311,14 +315,17 @@ class ToolChainMonitor:
 
         # Count access to different resources
         resource_tools = [
-            'file_read', 'file_write', 'database_query',
-            'api_call', 'web_scrape', 's3_access'
+            "file_read",
+            "file_write",
+            "database_query",
+            "api_call",
+            "web_scrape",
+            "s3_access",
         ]
 
         recent_calls = chain[-10:]
         resource_accesses = [
-            c for c in recent_calls
-            if any(rt in c.tool_name.lower() for rt in resource_tools)
+            c for c in recent_calls if any(rt in c.tool_name.lower() for rt in resource_tools)
         ]
 
         # Too many resource accesses
@@ -331,9 +338,9 @@ class ToolChainMonitor:
                 confidence=0.7,
                 should_block=False,
                 metadata={
-                    'access_count': len(resource_accesses),
-                    'resources': [c.tool_name for c in resource_accesses],
-                }
+                    "access_count": len(resource_accesses),
+                    "resources": [c.tool_name for c in resource_accesses],
+                },
             )
 
         return None
@@ -349,10 +356,7 @@ class ToolChainMonitor:
 
         # Check if pattern appears in tools
         for i in range(len(tools) - len(pattern) + 1):
-            if all(
-                pattern[j].lower() in tools[i + j].lower()
-                for j in range(len(pattern))
-            ):
+            if all(pattern[j].lower() in tools[i + j].lower() for j in range(len(pattern))):
                 return True
 
         return False
@@ -361,47 +365,46 @@ class ToolChainMonitor:
         """Remove calls outside time window."""
         cutoff = current_time - self.time_window_seconds
         self.session_chains[session_id] = [
-            c for c in self.session_chains[session_id]
-            if c.timestamp > cutoff
+            c for c in self.session_chains[session_id] if c.timestamp > cutoff
         ]
 
     def _init_dangerous_combinations(self) -> Dict[str, Dict[str, Any]]:
         """Initialize dangerous tool combinations."""
         return {
-            'file_search -> file_read -> network': {
-                'severity': 'critical',
-                'risk': 'critical',
-                'confidence': 0.9,
-                'should_block': True,
-                'description': 'Search files, read, then exfiltrate via network',
+            "file_search -> file_read -> network": {
+                "severity": "critical",
+                "risk": "critical",
+                "confidence": 0.9,
+                "should_block": True,
+                "description": "Search files, read, then exfiltrate via network",
             },
-            'database_query -> file_write -> execute': {
-                'severity': 'critical',
-                'risk': 'critical',
-                'confidence': 0.95,
-                'should_block': True,
-                'description': 'Query DB, write file, then execute',
+            "database_query -> file_write -> execute": {
+                "severity": "critical",
+                "risk": "critical",
+                "confidence": 0.95,
+                "should_block": True,
+                "description": "Query DB, write file, then execute",
             },
-            'credential -> ssh -> execute': {
-                'severity': 'critical',
-                'risk': 'critical',
-                'confidence': 0.9,
-                'should_block': True,
-                'description': 'Access credentials, SSH, then execute commands',
+            "credential -> ssh -> execute": {
+                "severity": "critical",
+                "risk": "critical",
+                "confidence": 0.9,
+                "should_block": True,
+                "description": "Access credentials, SSH, then execute commands",
             },
-            'user_list -> permission -> delete': {
-                'severity': 'high',
-                'risk': 'high',
-                'confidence': 0.85,
-                'should_block': True,
-                'description': 'List users, modify permissions, then delete',
+            "user_list -> permission -> delete": {
+                "severity": "high",
+                "risk": "high",
+                "confidence": 0.85,
+                "should_block": True,
+                "description": "List users, modify permissions, then delete",
             },
-            'scan -> exploit -> execute': {
-                'severity': 'critical',
-                'risk': 'critical',
-                'confidence': 0.95,
-                'should_block': True,
-                'description': 'Scan for vulnerabilities, exploit, then execute',
+            "scan -> exploit -> execute": {
+                "severity": "critical",
+                "risk": "critical",
+                "confidence": 0.95,
+                "should_block": True,
+                "description": "Scan for vulnerabilities, exploit, then execute",
             },
         }
 
@@ -409,39 +412,36 @@ class ToolChainMonitor:
         """Initialize tool risk levels."""
         return {
             # Low risk
-            'read_public_data': 'low',
-            'search': 'low',
-            'calculate': 'low',
-            'translate': 'low',
-
+            "read_public_data": "low",
+            "search": "low",
+            "calculate": "low",
+            "translate": "low",
             # Medium risk
-            'file_read': 'medium',
-            'database_query': 'medium',
-            'api_call': 'medium',
-            'web_scrape': 'medium',
-
+            "file_read": "medium",
+            "database_query": "medium",
+            "api_call": "medium",
+            "web_scrape": "medium",
             # High risk
-            'file_write': 'high',
-            'database_write': 'high',
-            'execute_code': 'high',
-            'ssh_connect': 'high',
-            'modify_permissions': 'high',
-
+            "file_write": "high",
+            "database_write": "high",
+            "execute_code": "high",
+            "ssh_connect": "high",
+            "modify_permissions": "high",
             # Critical risk
-            'delete_file': 'critical',
-            'delete_database': 'critical',
-            'system_command': 'critical',
-            'network_admin': 'critical',
-            'credential_access': 'critical',
+            "delete_file": "critical",
+            "delete_database": "critical",
+            "system_command": "critical",
+            "network_admin": "critical",
+            "credential_access": "critical",
         }
 
     def get_session_chain(self, session_id: str) -> List[Dict[str, Any]]:
         """Get tool chain for a session."""
         return [
             {
-                'tool': c.tool_name,
-                'timestamp': c.timestamp,
-                'success': c.success,
+                "tool": c.tool_name,
+                "timestamp": c.timestamp,
+                "success": c.success,
             }
             for c in self.session_chains[session_id]
         ]
@@ -449,16 +449,16 @@ class ToolChainMonitor:
     def get_statistics(self) -> Dict[str, Any]:
         """Get tool chain monitoring statistics."""
         return {
-            'active_sessions': len(self.session_chains),
-            'total_alerts': len(self.alerts),
-            'alerts_by_severity': {
+            "active_sessions": len(self.session_chains),
+            "total_alerts": len(self.alerts),
+            "alerts_by_severity": {
                 severity: sum(1 for a in self.alerts if a.severity == severity)
-                for severity in ['low', 'medium', 'high', 'critical']
+                for severity in ["low", "medium", "high", "critical"]
             },
-            'avg_chain_length': (
-                sum(len(chain) for chain in self.session_chains.values())
-                / len(self.session_chains)
-                if self.session_chains else 0
+            "avg_chain_length": (
+                sum(len(chain) for chain in self.session_chains.values()) / len(self.session_chains)
+                if self.session_chains
+                else 0
             ),
         }
 

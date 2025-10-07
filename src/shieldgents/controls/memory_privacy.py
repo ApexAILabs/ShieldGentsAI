@@ -12,6 +12,7 @@ from dataclasses import dataclass
 @dataclass
 class MemoryEntry:
     """Entry in agent memory."""
+
     content: str
     timestamp: float
     user_id: Optional[str] = None
@@ -102,7 +103,8 @@ class MemoryPrivacyManager:
             original_count = len(self.memories[session_id])
 
             self.memories[session_id] = [
-                entry for entry in self.memories[session_id]
+                entry
+                for entry in self.memories[session_id]
                 if not entry.ttl or (current_time - entry.timestamp) <= entry.ttl
             ]
 

@@ -14,6 +14,7 @@ import math
 
 class AdversarialThreat(Enum):
     """Types of adversarial threats."""
+
     GRADIENT_ATTACK = "gradient_attack"
     PERTURBATION = "perturbation"
     EVASION = "evasion"
@@ -26,6 +27,7 @@ class AdversarialThreat(Enum):
 @dataclass
 class AdversarialAlert:
     """Alert for detected adversarial input."""
+
     threat_type: AdversarialThreat
     confidence: float
     description: str
@@ -53,7 +55,7 @@ class AdversarialInputDetector:
         max_unicode_ratio: float = 0.3,
         enable_homoglyph_detection: bool = True,
         enable_statistical_analysis: bool = True,
-        strict_mode: bool = False
+        strict_mode: bool = False,
     ):
         """
         Initialize the adversarial input detector.
@@ -73,28 +75,45 @@ class AdversarialInputDetector:
 
         # Known homoglyphs (basic set - expand as needed)
         self.homoglyphs = {
-            'а': 'a', 'е': 'e', 'о': 'o', 'р': 'p', 'с': 'c', 'у': 'y', 'х': 'x',  # Cyrillic
-            'ο': 'o', 'ν': 'v', 'α': 'a', 'ε': 'e',  # Greek
-            '０': '0', '１': '1', '２': '2', '３': '3', '４': '4',  # Fullwidth
-            '５': '5', '６': '6', '７': '7', '８': '8', '９': '9',
+            "а": "a",
+            "е": "e",
+            "о": "o",
+            "р": "p",
+            "с": "c",
+            "у": "y",
+            "х": "x",  # Cyrillic
+            "ο": "o",
+            "ν": "v",
+            "α": "a",
+            "ε": "e",  # Greek
+            "０": "0",
+            "１": "1",
+            "２": "2",
+            "３": "3",
+            "４": "4",  # Fullwidth
+            "５": "5",
+            "６": "6",
+            "７": "7",
+            "８": "8",
+            "９": "9",
         }
 
         # Zero-width and invisible characters
         self.invisible_chars = {
-            '\u200b',  # Zero-width space
-            '\u200c',  # Zero-width non-joiner
-            '\u200d',  # Zero-width joiner
-            '\u2060',  # Word joiner
-            '\ufeff',  # Zero-width no-break space
-            '\u180e',  # Mongolian vowel separator
+            "\u200b",  # Zero-width space
+            "\u200c",  # Zero-width non-joiner
+            "\u200d",  # Zero-width joiner
+            "\u2060",  # Word joiner
+            "\ufeff",  # Zero-width no-break space
+            "\u180e",  # Mongolian vowel separator
         }
 
         # Suspicious patterns
         self.evasion_patterns = [
-            r'[a-z]\s+[a-z]\s+[a-z]',  # Excessive spacing
-            r'(.)\1{10,}',  # Repeated characters
-            r'[^\x00-\x7F]{20,}',  # Long non-ASCII sequences
-            r'[\u0300-\u036f]{3,}',  # Multiple combining diacritics
+            r"\b[a-z]\s{2,}[a-z]\s{2,}[a-z]\b",  # Excessive spacing (2+ spaces)
+            r"(.)\1{10,}",  # Repeated characters
+            r"[^\x00-\x7F]{20,}",  # Long non-ASCII sequences
+            r"[\u0300-\u036f]{3,}",  # Multiple combining diacritics
         ]
 
     def scan(self, input_text: str) -> List[AdversarialAlert]:
@@ -157,7 +176,7 @@ class AdversarialInputDetector:
 
         if invisible_count > 0:
             confidence = min(1.0, invisible_count / 5)
-            sanitized = ''.join(char for char in text if char not in self.invisible_chars)
+            sanitized = "".join(char for char in text if char not in self.invisible_chars)
 
             return AdversarialAlert(
                 threat_type=AdversarialThreat.UNICODE_ATTACK,
@@ -166,7 +185,7 @@ class AdversarialInputDetector:
                 should_block=invisible_count > 3 or self.strict_mode,
                 evidence={"invisible_count": invisible_count},
                 original_input=text,
-                sanitized_input=sanitized
+                sanitized_input=sanitized,
             )
         return None
 
@@ -184,7 +203,7 @@ class AdversarialInputDetector:
 
         if homoglyph_count > 0:
             confidence = min(1.0, homoglyph_count / 10)
-            sanitized = ''.join(self.homoglyphs.get(char, char) for char in text)
+            sanitized = "".join(self.homoglyphs.get(char, char) for char in text)
 
             return AdversarialAlert(
                 threat_type=AdversarialThreat.HOMOGLYPH,
@@ -193,7 +212,7 @@ class AdversarialInputDetector:
                 should_block=homoglyph_count > 5 or self.strict_mode,
                 evidence={"homoglyph_count": homoglyph_count},
                 original_input=text,
-                sanitized_input=sanitized
+                sanitized_input=sanitized,
             )
         return None
 
@@ -230,7 +249,7 @@ class AdversarialInputDetector:
                 description=f"High entropy detected: {entropy:.2f}",
                 should_block=entropy > self.entropy_threshold + 1.5 or self.strict_mode,
                 evidence={"entropy": entropy, "threshold": self.entropy_threshold},
-                original_input=text
+                original_input=text,
             )
         return None
 
@@ -259,7 +278,7 @@ class AdversarialInputDetector:
                 description=f"High Unicode ratio: {ratio:.2%}",
                 should_block=ratio > 0.7 or self.strict_mode,
                 evidence={"unicode_ratio": ratio, "threshold": self.max_unicode_ratio},
-                original_input=text
+                original_input=text,
             )
         return None
 
@@ -284,7 +303,7 @@ class AdversarialInputDetector:
                     description=f"Evasion pattern detected: {pattern}",
                     should_block=len(matches) > 2 or self.strict_mode,
                     evidence={"pattern": pattern, "matches": matches[:5]},
-                    original_input=text
+                    original_input=text,
                 )
         return None
 
@@ -323,7 +342,7 @@ class AdversarialInputDetector:
                 description=f"Unusual character distribution (CV: {cv:.2f})",
                 should_block=cv > 4.0 or self.strict_mode,
                 evidence={"coefficient_of_variation": cv},
-                original_input=text
+                original_input=text,
             )
         return None
 
@@ -370,12 +389,11 @@ class GradientAttackDetector:
         total_length = sum(len(inp) for inp in safe_inputs)
         avg_length = total_length / len(safe_inputs) if safe_inputs else 0
 
-        self.baseline_patterns = {
-            "avg_length": avg_length,
-            "sample_count": len(safe_inputs)
-        }
+        self.baseline_patterns = {"avg_length": avg_length, "sample_count": len(safe_inputs)}
 
-    def detect_perturbation(self, input_text: str, reference: Optional[str] = None) -> Optional[AdversarialAlert]:
+    def detect_perturbation(
+        self, input_text: str, reference: Optional[str] = None
+    ) -> Optional[AdversarialAlert]:
         """
         Detect if input appears to be a perturbed version of expected input.
 
@@ -397,7 +415,7 @@ class GradientAttackDetector:
                     description=f"Input appears to be perturbed version of reference (similarity: {similarity:.2%})",
                     should_block=False,
                     evidence={"similarity": similarity},
-                    original_input=input_text
+                    original_input=input_text,
                 )
 
         return None

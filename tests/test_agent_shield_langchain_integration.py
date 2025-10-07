@@ -2,7 +2,9 @@ import pytest
 import sys
 from pathlib import Path
 
-VENV_SITE_PACKAGES = next((Path(__file__).resolve().parents[1] / '.venv' / 'lib').glob('python*/site-packages'), None)
+VENV_SITE_PACKAGES = next(
+    (Path(__file__).resolve().parents[1] / ".venv" / "lib").glob("python*/site-packages"), None
+)
 if VENV_SITE_PACKAGES and str(VENV_SITE_PACKAGES) not in sys.path:
     sys.path.insert(0, str(VENV_SITE_PACKAGES))
 

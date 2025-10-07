@@ -17,9 +17,9 @@ from shieldgents.mcp_server_builder import create_shielded_mcp_server, tool
 # Example 1: Simple server with automatic security
 def demo_simple_server():
     """Create a simple server with default security."""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("1. SIMPLE SHIELDED MCP SERVER")
-    print("="*70)
+    print("=" * 70)
 
     # Define tools
     def search(query: str) -> str:
@@ -35,7 +35,7 @@ def demo_simple_server():
     server = create_shielded_mcp_server(
         name="demo-server",
         description="Demo server with automatic security",
-        tools=[search, calculator]
+        tools=[search, calculator],
     )
 
     print("\n✅ Server created with automatic security:")
@@ -59,13 +59,10 @@ def demo_simple_server():
         print(f"  Params: {params}")
 
         result = server.handle_request(
-            tool_name=tool_name,
-            parameters=params,
-            user_id="user123",
-            session_id="session1"
+            tool_name=tool_name, parameters=params, user_id="user123", session_id="session1"
         )
 
-        if result['success']:
+        if result["success"]:
             print(f"  ✅ Success: {result['result']}")
         else:
             print(f"  ❌ Blocked: {result['error']}")
@@ -74,9 +71,9 @@ def demo_simple_server():
 # Example 2: Server with custom security settings
 def demo_custom_security():
     """Create server with custom security configuration."""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("2. CUSTOM SECURITY CONFIGURATION")
-    print("="*70)
+    print("=" * 70)
 
     def get_user_data(user_id: str) -> dict:
         """Get user information."""
@@ -84,7 +81,7 @@ def demo_custom_security():
             "user_id": user_id,
             "name": "John Doe",
             "email": "john@example.com",
-            "ssn": "123-45-6789"  # Will be redacted
+            "ssn": "123-45-6789",  # Will be redacted
         }
 
     # Create server with custom settings
@@ -105,32 +102,27 @@ def demo_custom_security():
         tool_name="get_user_data",
         parameters={"user_id": "user123"},
         user_id="admin",
-        session_id="session1"
+        session_id="session1",
     )
 
-    if result['success']:
+    if result["success"]:
         print(f"  ✅ Response (PII redacted): {result['result']}")
 
 
 # Example 3: Using the @tool decorator
 def demo_tool_decorator():
     """Demonstrate using the @tool decorator."""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("3. USING @tool DECORATOR")
-    print("="*70)
+    print("=" * 70)
 
-    @tool(
-        description="Search the web for information",
-        sandbox=True
-    )
+    @tool(description="Search the web for information", sandbox=True)
     def web_search(query: str, limit: int = 10) -> list:
         """Search the web."""
         return [f"Result {i}: {query}" for i in range(min(limit, 10))]
 
     @tool(
-        description="Send email to user",
-        requires_approval=True,  # Requires approval
-        sandbox=False
+        description="Send email to user", requires_approval=True, sandbox=False  # Requires approval
     )
     def send_email(recipient: str, subject: str, body: str) -> bool:
         """Send an email."""
@@ -140,7 +132,7 @@ def demo_tool_decorator():
     @tool(
         description="Delete user account",
         requires_approval=True,  # High-risk operation
-        sandbox=True
+        sandbox=True,
     )
     def delete_user(user_id: str) -> bool:
         """Delete a user account."""
@@ -164,22 +156,18 @@ def demo_tool_decorator():
         tool_name="web_search",
         parameters={"query": "AI safety", "limit": 3},
         user_id="user123",
-        session_id="session1"
+        session_id="session1",
     )
     print(f"\n  web_search: {result['success']}")
-    if result['success']:
+    if result["success"]:
         print(f"  Results: {result['result']}")
 
     # Tool requiring approval (simulated - would need actual approval system)
     result = server.handle_request(
         tool_name="send_email",
-        parameters={
-            "recipient": "test@example.com",
-            "subject": "Hello",
-            "body": "Test message"
-        },
+        parameters={"recipient": "test@example.com", "subject": "Hello", "body": "Test message"},
         user_id="user123",
-        session_id="session1"
+        session_id="session1",
     )
     print(f"\n  send_email: {result['success']}")
 
@@ -187,9 +175,9 @@ def demo_tool_decorator():
 # Example 4: Rate limiting demonstration
 def demo_rate_limiting():
     """Demonstrate rate limiting."""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("4. RATE LIMITING")
-    print("="*70)
+    print("=" * 70)
 
     def quick_tool(data: str) -> str:
         """A tool that can be called quickly."""
@@ -210,23 +198,23 @@ def demo_rate_limiting():
             tool_name="quick_tool",
             parameters={"data": f"request_{i}"},
             user_id="user123",  # Same user
-            session_id="session1"
+            session_id="session1",
         )
 
-        if result['success']:
+        if result["success"]:
             print(f"  {i+1}. ✅ Success")
         else:
             print(f"  {i+1}. ❌ {result['error']}")
-            if 'retry_after' in result:
+            if "retry_after" in result:
                 print(f"     Retry after: {result['retry_after']}s")
 
 
 # Example 5: Exfiltration detection
 def demo_exfiltration_detection():
     """Demonstrate exfiltration detection."""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("5. EXFILTRATION DETECTION")
-    print("="*70)
+    print("=" * 70)
 
     def data_fetcher(resource: str) -> str:
         """Fetch data from resource."""
@@ -262,10 +250,10 @@ def demo_exfiltration_detection():
             tool_name="data_fetcher",
             parameters={"resource": resource},
             user_id="user123",
-            session_id="session1"
+            session_id="session1",
         )
 
-        if result['success']:
+        if result["success"]:
             print(f"  ✅ Response: {result['result'][:60]}...")
         else:
             print(f"  ❌ Blocked: {result['error']}")
@@ -274,9 +262,9 @@ def demo_exfiltration_detection():
 # Example 6: Server metrics and monitoring
 def demo_server_metrics():
     """Demonstrate server metrics."""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("6. SERVER METRICS & MONITORING")
-    print("="*70)
+    print("=" * 70)
 
     def analytics(metric: str) -> dict:
         """Get analytics data."""
@@ -296,7 +284,7 @@ def demo_server_metrics():
             tool_name="analytics",
             parameters={"metric": f"metric_{i}"},
             user_id=f"user{i % 2}",  # Alternate users
-            session_id="session1"
+            session_id="session1",
         )
 
     # Get server info
@@ -316,9 +304,9 @@ def demo_server_metrics():
 
 def main():
     """Run all demonstrations."""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("🛡️  SHIELDED MCP SERVER BUILDER DEMO")
-    print("="*70)
+    print("=" * 70)
 
     demo_simple_server()
     demo_custom_security()
@@ -327,9 +315,9 @@ def main():
     demo_exfiltration_detection()
     demo_server_metrics()
 
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("✅ ALL DEMONSTRATIONS COMPLETE")
-    print("="*70)
+    print("=" * 70)
 
     print("\n🔑 Key Takeaways:")
     print("  1. create_shielded_mcp_server() gives you automatic security")

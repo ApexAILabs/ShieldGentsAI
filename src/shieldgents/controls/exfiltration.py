@@ -13,6 +13,7 @@ import base64
 
 class ExfiltrationMethod(Enum):
     """Methods of data exfiltration."""
+
     BASE64_ENCODING = "base64_encoding"
     HEX_ENCODING = "hex_encoding"
     URL_ENCODING = "url_encoding"
@@ -27,6 +28,7 @@ class ExfiltrationMethod(Enum):
 @dataclass
 class ExfiltrationAlert:
     """Alert for detected exfiltration attempt."""
+
     severity: str  # "low", "medium", "high", "critical"
     method: ExfiltrationMethod
     description: str
@@ -122,7 +124,7 @@ class ExfiltrationDetector:
     def _detect_base64(self, text: str) -> Optional[ExfiltrationAlert]:
         """Detect base64-encoded data."""
         # Look for base64 patterns (groups of base64 chars)
-        base64_pattern = r'[A-Za-z0-9+/]{40,}={0,2}'
+        base64_pattern = r"[A-Za-z0-9+/]{40,}={0,2}"
         matches = re.findall(base64_pattern, text)
 
         if not matches:
@@ -150,13 +152,15 @@ class ExfiltrationDetector:
                 method=ExfiltrationMethod.BASE64_ENCODING,
                 description=f"Base64-encoded data detected ({len(valid_base64)} instances)",
                 confidence=0.9,
-                evidence=valid_base64[0][:100] + "..." if len(valid_base64[0]) > 100 else valid_base64[0],
+                evidence=valid_base64[0][:100] + "..."
+                if len(valid_base64[0]) > 100
+                else valid_base64[0],
                 should_block=should_block,
                 metadata={
-                    'count': len(valid_base64),
-                    'total_length': total_length,
-                    'samples': valid_base64[:3],
-                }
+                    "count": len(valid_base64),
+                    "total_length": total_length,
+                    "samples": valid_base64[:3],
+                },
             )
 
         return None
@@ -164,7 +168,7 @@ class ExfiltrationDetector:
     def _detect_hex(self, text: str) -> Optional[ExfiltrationAlert]:
         """Detect hex-encoded data."""
         # Look for long hex strings
-        hex_pattern = r'\b[0-9a-fA-F]{40,}\b'
+        hex_pattern = r"\b[0-9a-fA-F]{40,}\b"
         matches = re.findall(hex_pattern, text)
 
         if matches:
@@ -181,9 +185,9 @@ class ExfiltrationDetector:
                 evidence=matches[0][:100] + "..." if len(matches[0]) > 100 else matches[0],
                 should_block=should_block,
                 metadata={
-                    'count': len(matches),
-                    'total_length': total_length,
-                }
+                    "count": len(matches),
+                    "total_length": total_length,
+                },
             )
 
         return None
@@ -191,7 +195,7 @@ class ExfiltrationDetector:
     def _detect_url_encoding(self, text: str) -> Optional[ExfiltrationAlert]:
         """Detect URL-encoded data."""
         # Look for URL encoding patterns
-        url_pattern = r'(?:%[0-9a-fA-F]{2}){10,}'
+        url_pattern = r"(?:%[0-9a-fA-F]{2}){10,}"
         matches = re.findall(url_pattern, text)
 
         if matches:
@@ -202,7 +206,7 @@ class ExfiltrationDetector:
                 confidence=0.8,
                 evidence=matches[0][:100],
                 should_block=len(matches) > 5,
-                metadata={'count': len(matches)}
+                metadata={"count": len(matches)},
             )
 
         return None
@@ -210,7 +214,7 @@ class ExfiltrationDetector:
     def _detect_high_entropy(self, text: str) -> Optional[ExfiltrationAlert]:
         """Detect high entropy strings (potentially encrypted/encoded)."""
         # Calculate Shannon entropy for long strings
-        long_strings = re.findall(r'\S{50,}', text)
+        long_strings = re.findall(r"\S{50,}", text)
 
         high_entropy_strings = []
         for s in long_strings:
@@ -229,9 +233,9 @@ class ExfiltrationDetector:
                 evidence=max_entropy_str[:100],
                 should_block=max_entropy > 5.0,
                 metadata={
-                    'entropy': max_entropy,
-                    'count': len(high_entropy_strings),
-                }
+                    "entropy": max_entropy,
+                    "count": len(high_entropy_strings),
+                },
             )
 
         return None
@@ -248,8 +252,8 @@ class ExfiltrationDetector:
 
         # Find encoded-looking strings
         encoded_patterns = [
-            r'[A-Za-z0-9+/]{20,}',  # base64-like
-            r'[0-9a-fA-F]{20,}',     # hex-like
+            r"[A-Za-z0-9+/]{20,}",  # base64-like
+            r"[0-9a-fA-F]{20,}",  # hex-like
         ]
 
         for pattern in encoded_patterns:
@@ -268,9 +272,9 @@ class ExfiltrationDetector:
                 evidence=f"{total_encoded} encoded fragments across session",
                 should_block=True,
                 metadata={
-                    'session_id': session_id,
-                    'fragment_count': total_encoded,
-                }
+                    "session_id": session_id,
+                    "fragment_count": total_encoded,
+                },
             )
 
         return None
@@ -278,7 +282,7 @@ class ExfiltrationDetector:
     def _detect_dns_tunnel(self, text: str) -> Optional[ExfiltrationAlert]:
         """Detect DNS tunneling patterns."""
         # Look for suspicious subdomain patterns
-        dns_pattern = r'\b[a-z0-9]{30,}\.[a-z0-9\-]+\.[a-z]{2,}\b'
+        dns_pattern = r"\b[a-z0-9]{30,}\.[a-z0-9\-]+\.[a-z]{2,}\b"
         matches = re.findall(dns_pattern, text, re.IGNORECASE)
 
         if matches:
@@ -289,7 +293,7 @@ class ExfiltrationDetector:
                 confidence=0.7,
                 evidence=matches[0][:100],
                 should_block=True,
-                metadata={'count': len(matches), 'domains': matches[:5]}
+                metadata={"count": len(matches), "domains": matches[:5]},
             )
 
         return None
@@ -322,6 +326,6 @@ class ExfiltrationDetector:
     def get_statistics(self) -> Dict[str, Any]:
         """Get exfiltration detection statistics."""
         return {
-            'tracked_sessions': len(self.session_encodings),
-            'total_fragments': sum(len(f) for f in self.session_encodings.values()),
+            "tracked_sessions": len(self.session_encodings),
+            "total_fragments": sum(len(f) for f in self.session_encodings.values()),
         }

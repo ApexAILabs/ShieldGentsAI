@@ -31,6 +31,7 @@ class TestSecurityIntegration:
         acl = AccessControlList()
         # Create a role with read permission
         from shieldgents.controls.access import Permission
+
         acl.create_role("user", permissions={Permission.READ.value})
         acl.create_user("user-1", "testuser", roles={"user"})
         tool_access = ToolAccessControl(acl)
@@ -41,9 +42,7 @@ class TestSecurityIntegration:
         assert tool_access.can_use_tool("user-1", "read_data")
 
         # Test privilege escalation detection
-        alert = privilege_monitor.detect_social_engineering(
-            "user-1", "session-1", "sudo rm -rf /"
-        )
+        alert = privilege_monitor.detect_social_engineering("user-1", "session-1", "sudo rm -rf /")
         assert alert is not None
 
     def test_multi_layer_security(self) -> None:
@@ -53,6 +52,7 @@ class TestSecurityIntegration:
         acl = AccessControlList()
         # Create a role with read permission
         from shieldgents.controls.access import Permission
+
         acl.create_role("user", permissions={Permission.READ.value})
         acl.create_user("user-1", "testuser", roles={"user"})
         tool_access = ToolAccessControl(acl)
@@ -88,6 +88,7 @@ class TestEndToEndWorkflow:
         acl = AccessControlList()
         # Create a role with read permission
         from shieldgents.controls.access import Permission
+
         acl.create_role("user", permissions={Permission.READ.value})
         acl.create_user("user-1", "testuser", roles={"user"})
         tool_access = ToolAccessControl(acl)

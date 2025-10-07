@@ -13,7 +13,7 @@ from shieldgents.interface.dashboard import create_dashboard
 
 
 # Initialize security monitor
-if 'monitor' not in st.session_state:
+if "monitor" not in st.session_state:
     st.session_state.monitor = SecurityMonitor()
 
 monitor = st.session_state.monitor
