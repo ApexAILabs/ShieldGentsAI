@@ -56,6 +56,16 @@ class AdversarialInputDetector:
         enable_statistical_analysis: bool = True,
         strict_mode: bool = False
     ):
+        """
+        Initialize the adversarial input detector.
+
+        Args:
+            entropy_threshold: Maximum Shannon entropy before flagging (default: 4.5)
+            max_unicode_ratio: Maximum ratio of non-ASCII characters (default: 0.3)
+            enable_homoglyph_detection: Enable homoglyph character detection
+            enable_statistical_analysis: Enable statistical anomaly detection
+            strict_mode: Block on any detection rather than just high-confidence threats
+        """
         self.entropy_threshold = entropy_threshold
         self.max_unicode_ratio = max_unicode_ratio
         self.enable_homoglyph_detection = enable_homoglyph_detection
@@ -135,7 +145,15 @@ class AdversarialInputDetector:
         return alerts
 
     def _check_invisible_characters(self, text: str) -> Optional[AdversarialAlert]:
-        """Check for invisible/zero-width characters."""
+        """
+        Check for invisible/zero-width characters.
+
+        Args:
+            text: Input text to scan
+
+        Returns:
+            AdversarialAlert if invisible characters detected, None otherwise
+        """
         invisible_count = sum(1 for char in text if char in self.invisible_chars)
 
         if invisible_count > 0:
@@ -154,7 +172,15 @@ class AdversarialInputDetector:
         return None
 
     def _check_homoglyphs(self, text: str) -> Optional[AdversarialAlert]:
-        """Check for homoglyph substitutions."""
+        """
+        Check for homoglyph substitutions (visually similar characters from different scripts).
+
+        Args:
+            text: Input text to scan
+
+        Returns:
+            AdversarialAlert if homoglyphs detected, None otherwise
+        """
         homoglyph_count = sum(1 for char in text if char in self.homoglyphs)
 
         if homoglyph_count > 0:
@@ -173,7 +199,15 @@ class AdversarialInputDetector:
         return None
 
     def _check_entropy(self, text: str) -> Optional[AdversarialAlert]:
-        """Check Shannon entropy of the input."""
+        """
+        Check Shannon entropy of the input for randomness detection.
+
+        Args:
+            text: Input text to scan
+
+        Returns:
+            AdversarialAlert if entropy exceeds threshold, None otherwise
+        """
         if not text:
             return None
 
@@ -202,7 +236,15 @@ class AdversarialInputDetector:
         return None
 
     def _check_unicode_ratio(self, text: str) -> Optional[AdversarialAlert]:
-        """Check ratio of non-ASCII Unicode characters."""
+        """
+        Check ratio of non-ASCII Unicode characters for suspicious foreign character usage.
+
+        Args:
+            text: Input text to scan
+
+        Returns:
+            AdversarialAlert if Unicode ratio exceeds threshold, None otherwise
+        """
         if not text:
             return None
 
@@ -223,7 +265,15 @@ class AdversarialInputDetector:
         return None
 
     def _check_evasion_patterns(self, text: str) -> Optional[AdversarialAlert]:
-        """Check for known evasion patterns."""
+        """
+        Check for known evasion patterns like excessive spacing or repeated characters.
+
+        Args:
+            text: Input text to scan
+
+        Returns:
+            AdversarialAlert if evasion pattern detected, None otherwise
+        """
         for pattern in self.evasion_patterns:
             matches = re.findall(pattern, text)
             if matches:
@@ -240,7 +290,15 @@ class AdversarialInputDetector:
         return None
 
     def _check_statistical_anomalies(self, text: str) -> Optional[AdversarialAlert]:
-        """Check for statistical anomalies in character distribution."""
+        """
+        Check for statistical anomalies in character distribution using coefficient of variation.
+
+        Args:
+            text: Input text to scan
+
+        Returns:
+            AdversarialAlert if character distribution is anomalous, None otherwise
+        """
         if len(text) < 10:
             return None
 
@@ -303,7 +361,12 @@ class GradientAttackDetector:
         self.baseline_patterns: Dict[str, Any] = {}
 
     def learn_baseline(self, safe_inputs: List[str]):
-        """Learn baseline patterns from safe inputs."""
+        """
+        Learn baseline patterns from safe inputs.
+
+        Args:
+            safe_inputs: List of known-safe input strings to establish baseline
+        """
         # Calculate average length, entropy, etc.
         total_length = sum(len(inp) for inp in safe_inputs)
         avg_length = total_length / len(safe_inputs) if safe_inputs else 0
@@ -341,7 +404,16 @@ class GradientAttackDetector:
         return None
 
     def _calculate_similarity(self, str1: str, str2: str) -> float:
-        """Calculate simple character-based similarity."""
+        """
+        Calculate simple character-based similarity.
+
+        Args:
+            str1: First string to compare
+            str2: Second string to compare
+
+        Returns:
+            Similarity score between 0.0 and 1.0
+        """
         if not str1 or not str2:
             return 0.0
 
