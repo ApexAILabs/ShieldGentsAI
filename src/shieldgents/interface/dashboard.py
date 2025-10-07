@@ -4,8 +4,7 @@ import streamlit as st
 import plotly.graph_objects as go
 import plotly.express as px
 import pandas as pd
-from typing import Dict, Any, List, Optional
-from datetime import datetime, timedelta
+from typing import Dict, Any, List
 import time
 
 
@@ -34,7 +33,7 @@ def create_dashboard(monitor: Any) -> None:
         st.divider()
 
         st.header("Filters")
-        severity_filter = st.multiselect(
+        _ = st.multiselect(
             "Severity Levels",
             ["debug", "info", "warning", "error", "critical"],
             default=["warning", "error", "critical"],

@@ -7,7 +7,6 @@ Usage:
 """
 
 import streamlit as st
-import time
 
 from shieldgents.core import EventType, SecurityMonitor, Severity
 from shieldgents.interface.dashboard import create_dashboard

@@ -35,9 +35,9 @@ if _should_print_install_logo() and _os.environ.get("SHIELDGENTS_LOGO_PRINTED") 
     else:
         _os.environ["SHIELDGENTS_LOGO_PRINTED"] = "1"
 
-from shieldgents import core, controls, governance, integrations, interface, redteam
-from shieldgents.integrations.agent_shield import AgentShield
-from shieldgents.integrations.mcp_server_builder import create_shielded_mcp_server
+from shieldgents import core, controls, governance, integrations, interface, redteam  # noqa: E402
+from shieldgents.integrations.agent_shield import AgentShield  # noqa: E402
+from shieldgents.integrations.mcp_server_builder import create_shielded_mcp_server  # noqa: E402
 
 __version__ = "0.2.0"
 

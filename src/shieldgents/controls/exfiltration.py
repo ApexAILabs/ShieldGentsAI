@@ -4,12 +4,11 @@ Detects attempts to leak sensitive data through covert channels, unusual encodin
 or suspicious output patterns in agent responses.
 """
 
-from typing import Dict, List, Optional, Any, Set
+from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
 from enum import Enum
 import re
 import base64
-import json
 
 
 class ExfiltrationMethod(Enum):

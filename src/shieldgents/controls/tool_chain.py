@@ -4,10 +4,9 @@ Detects when agents use multiple tools in sequence to escalate privileges,
 access unauthorized resources, or move laterally through infrastructure.
 """
 
-from typing import Dict, List, Optional, Any, Set, Tuple
+from typing import Dict, List, Optional, Any
 from dataclasses import dataclass, field
 from enum import Enum
-from datetime import datetime, timedelta
 from collections import defaultdict
 
 
@@ -282,7 +281,6 @@ class ToolChainMonitor:
 
             # Check if found credentials then used them
             current_params_str = str(recent_calls[i].parameters).lower()
-            next_params_str = str(recent_calls[i + 1].parameters).lower()
 
             for keyword1, keyword2 in lateral_keywords:
                 if keyword1 in current_tool.lower() and keyword2 in current_params_str:

@@ -9,7 +9,7 @@ Provides security controls for MCP servers including:
 - Data leakage prevention in MCP responses
 """
 
-from typing import Dict, List, Optional, Any, Callable, Set
+from typing import Dict, List, Optional, Any, Set
 from dataclasses import dataclass, field
 from enum import Enum
 from datetime import datetime

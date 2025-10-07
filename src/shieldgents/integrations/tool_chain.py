@@ -4,11 +4,10 @@ Prevents agents from chaining tools to escalate privileges or
 perform unauthorized lateral movement across systems.
 """
 
-from typing import List, Dict, Set, Optional, Callable, Any
+from typing import List, Dict, Set, Optional, Any
 from dataclasses import dataclass, field
 from enum import Enum
 from datetime import datetime, timedelta
-import re
 
 
 class ToolRiskLevel(Enum):

@@ -5,9 +5,8 @@ Manages conversation memory to prevent privacy leaks through cached contexts,
 enforces data retention policies, and provides consent-based memory access.
 """
 
-from typing import Dict, List, Optional, Any
-from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from typing import Dict, List, Optional
+from dataclasses import dataclass
 
 
 @dataclass

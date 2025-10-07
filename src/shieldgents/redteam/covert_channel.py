@@ -9,9 +9,8 @@ Detects sophisticated data exfiltration through:
 """
 
 import re
-import time
 import unicodedata
-from typing import List, Dict, Optional, Any, Tuple
+from typing import List, Dict, Optional, Any
 from dataclasses import dataclass, field
 from collections import Counter
 from enum import Enum
@@ -105,7 +104,7 @@ class CovertChannelDetector:
         unicode_result = self._detect_unicode_steganography(output)
         if unicode_result:
             channel_types.append(CovertChannelType.UNICODE_STEGANOGRAPHY)
-            evidence.append(f"Suspicious Unicode patterns detected")
+            evidence.append("Suspicious Unicode patterns detected")
             metadata['unicode_steg'] = unicode_result
 
         # 3. Check for whitespace encoding

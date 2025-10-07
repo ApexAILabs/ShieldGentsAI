@@ -10,9 +10,9 @@ Showcases the 5 new critical security modules:
 
 from shieldgents.exfiltration import ExfiltrationDetector, DataLeakageMonitor
 from shieldgents.tool_chain import ToolChainMonitor, ToolChainPolicy, ToolRiskLevel
-from shieldgents.privilege import PrivilegeMonitor, PrivilegeLevel, EscalationMethod
+from shieldgents.privilege import PrivilegeMonitor, PrivilegeLevel
 from shieldgents.covert_channel import CovertChannelDetector
-from shieldgents.production import production_ready, ProductionAgent, CircuitBreaker
+from shieldgents.production import production_ready, ProductionAgent
 
 
 def demo_exfiltration_detection():
@@ -88,7 +88,7 @@ def demo_tool_chain_prevention():
             print(f"   Violation Type: {violation.violation_type.value}")
             print(f"   Severity: {violation.severity}")
         else:
-            print(f"   ✅ Allowed")
+            print("   ✅ Allowed")
             violations = monitor.record_tool_call(tool_name, user_id, session_id)
             if violations:
                 print(f"   ⚠️  Violations detected: {[v.violation_type.value for v in violations]}")
@@ -135,7 +135,7 @@ def demo_privilege_escalation():
             print(f"   Prompt: {operation_or_prompt[:50]}...")
             alert = monitor.detect_social_engineering(user_id, 'session1', operation_or_prompt)
             if alert:
-                print(f"   ❌ SOCIAL ENGINEERING DETECTED")
+                print("   ❌ SOCIAL ENGINEERING DETECTED")
                 print(f"   Method: {alert.method.value}")
                 print(f"   Severity: {alert.severity}")
         else:
@@ -148,11 +148,11 @@ def demo_privilege_escalation():
             )
 
             if allowed:
-                print(f"   ✅ Allowed")
+                print("   ✅ Allowed")
             else:
                 print(f"   ❌ DENIED: {alert.description}")
                 if alert.requires_approval:
-                    print(f"   📋 Requires human approval")
+                    print("   📋 Requires human approval")
 
     # Show statistics
     print("\n📊 Privilege Statistics:")
@@ -184,7 +184,7 @@ def demo_covert_channel_detection():
         result = detector.scan(output, generation_time=1.0 + i * 0.5)
 
         if result.detected:
-            print(f"   ⚠️  COVERT CHANNEL DETECTED")
+            print("   ⚠️  COVERT CHANNEL DETECTED")
             print(f"   Confidence: {result.confidence:.2f}")
             print(f"   Channels: {[c.value for c in result.channel_types]}")
             print(f"   Evidence: {result.evidence}")

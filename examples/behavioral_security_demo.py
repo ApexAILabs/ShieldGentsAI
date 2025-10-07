@@ -23,7 +23,6 @@ from shieldgents.behavior import (
     OutputGuard,
     AgentAction,
     ActionType,
-    RiskLevel,
 )
 
 
@@ -106,7 +105,7 @@ def example_monitor_agent_actions():
     )
 
     monitor = BehaviorMonitor(policy)
-    tool_guard = ToolExecutionGuard(monitor)
+    _ = ToolExecutionGuard(monitor)  # Initialize guard
 
     print("📋 Policy configured:")
     print(f"   Allowed tools: {policy.allowed_tools}")
@@ -126,7 +125,7 @@ def example_monitor_agent_actions():
     )
 
     result1 = monitor.check_action(action1)
-    print(f"1. read_table(users)")
+    print("1. read_table(users)")
     print(f"   {'✅ ALLOWED' if result1['allowed'] else '🚫 BLOCKED'}")
     if result1['allowed']:
         monitor.record_action(action1, "success")
@@ -141,7 +140,7 @@ def example_monitor_agent_actions():
     )
 
     result2 = monitor.check_action(action2)
-    print(f"2. drop_table(users)")
+    print("2. drop_table(users)")
     print(f"   {'✅ ALLOWED' if result2['allowed'] else '🚫 BLOCKED'}")
     if not result2['allowed']:
         print(f"   Reason: {result2['violations']}")
@@ -283,9 +282,9 @@ def example_output_security():
         result = output_guard.check_output(output)
 
         if result['safe']:
-            print(f"   ✅ SAFE")
+            print("   ✅ SAFE")
         else:
-            print(f"   🚫 BLOCKED")
+            print("   🚫 BLOCKED")
             print(f"   Violations: {result['violations']}")
             print(f"   Sanitized: {result['sanitized_output'][:50]}...")
 

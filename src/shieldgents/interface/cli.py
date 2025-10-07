@@ -45,7 +45,7 @@ def main() -> None:
 
     elif command == "test":
         print("🔴 Running Red Team Security Tests...")
-        from shieldgents.redteam.vectors import RedTeamTester, AttackVectorLibrary
+        from shieldgents.redteam.vectors import RedTeamTester
 
         def mock_agent(prompt: str) -> str:
             return f"Response to: {prompt}"

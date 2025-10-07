@@ -256,7 +256,7 @@ class OutputGuard:
         ]
         for pattern in sensitive_patterns:
             if re.search(pattern, output, re.IGNORECASE):
-                violations.append(f"Output may contain sensitive data")
+                violations.append("Output may contain sensitive data")
                 output = re.sub(pattern, "[SENSITIVE DATA REDACTED]", output, flags=re.IGNORECASE)
 
         return {
@@ -368,7 +368,7 @@ def create_secure_agent_wrapper(
         Wrapped agent function
     """
     monitor = BehaviorMonitor(policy)
-    tool_guard = ToolExecutionGuard(monitor)
+    _ = ToolExecutionGuard(monitor)  # Initialize guard
     output_guard = OutputGuard(policy)
 
     def secure_agent(prompt: str, agent_id: str = "default") -> Dict[str, Any]:

@@ -5,7 +5,7 @@ Detects and blocks malicious use cases like malware generation, phishing,
 social engineering scripts, and other harmful content creation.
 """
 
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Any
 from dataclasses import dataclass
 from enum import Enum
 

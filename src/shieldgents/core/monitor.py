@@ -3,7 +3,7 @@
 import json
 import logging
 import time
-from typing import Any, Dict, List, Optional, Callable, Union
+from typing import Any, Dict, List, Optional, Callable
 from dataclasses import dataclass, field, asdict
 from enum import Enum
 from datetime import datetime

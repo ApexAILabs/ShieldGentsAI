@@ -127,7 +127,7 @@ def demo_request_validation():
         )
 
         if allowed:
-            print(f"    ✅ ALLOWED")
+            print("    ✅ ALLOWED")
         else:
             print(f"    ❌ BLOCKED: {alert.description}")
             print(f"    Threat: {alert.threat_type.value}")
@@ -188,7 +188,7 @@ def demo_response_validation():
         )
 
         if is_valid:
-            print(f"    ✅ VALID")
+            print("    ✅ VALID")
             if sanitized:
                 print(f"    ⚠️  Sanitized: {sanitized[:60]}...")
         else:
@@ -345,9 +345,9 @@ def demo_real_world_scenario():
         if allowed:
             server_profile = registry.servers[step_info['server']]
             if step_info['tool'] in server_profile.require_approval_for:
-                print(f"    ⚠️  REQUIRES APPROVAL")
+                print("    ⚠️  REQUIRES APPROVAL")
             else:
-                print(f"    ✅ ALLOWED")
+                print("    ✅ ALLOWED")
 
             # Simulate response validation
             if step_info['tool'] == "search":

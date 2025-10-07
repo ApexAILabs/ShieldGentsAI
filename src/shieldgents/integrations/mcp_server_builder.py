@@ -29,7 +29,6 @@ Example:
 
 from typing import Callable, List, Optional, Dict, Any
 from dataclasses import dataclass, field
-import functools
 import json
 from datetime import datetime
 
@@ -40,7 +39,6 @@ from shieldgents.core.sandbox import FunctionSandbox, ResourceLimits, ToolWrappe
 from shieldgents.core.monitor import SecurityMonitor, EventType, Severity
 from shieldgents.governance.audit import AuditLogger, AuditEventType
 from shieldgents.redteam.exfiltration import ExfiltrationDetector
-from shieldgents.integrations.mcp_security import MCPSecurityMonitor, MCPServerRegistry
 
 
 @dataclass

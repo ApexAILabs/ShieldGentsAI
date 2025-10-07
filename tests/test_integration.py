@@ -3,8 +3,8 @@
 import pytest
 from shieldgents.core.sandbox import FunctionSandbox, ProcessSandbox, ResourceLimits
 from shieldgents.core.monitor import SecurityMonitor
-from shieldgents.controls.access import AccessControl
-from shieldgents.controls.privilege import PrivilegeControl
+from shieldgents.controls.access import AccessControlList, ToolAccessControl
+from shieldgents.controls.privilege import PrivilegeMonitor
 
 
 @pytest.mark.integration
@@ -13,7 +13,7 @@ class TestSecurityIntegration:
 
     def test_sandbox_with_monitor(self) -> None:
         """Test sandbox integration with security monitor."""
-        monitor = SecurityMonitor()
+        _ = SecurityMonitor()
         sandbox = FunctionSandbox()
 
         def test_func(x: int) -> int:
@@ -28,23 +28,34 @@ class TestSecurityIntegration:
 
     def test_access_control_with_privilege(self) -> None:
         """Test access control with privilege escalation detection."""
-        access_control = AccessControl()
-        privilege_control = PrivilegeControl()
+        acl = AccessControlList()
+        # Create a role with read permission
+        from shieldgents.controls.access import Permission
+        acl.create_role("user", permissions={Permission.READ.value})
+        acl.create_user("user-1", "testuser", roles={"user"})
+        tool_access = ToolAccessControl(acl)
+        privilege_monitor = PrivilegeMonitor()
 
-        # Test normal access
-        assert access_control.check_access("user", "resource") is not None
+        # Test tool access
+        tool_access.register_tool("read_data", required_permission="read")
+        assert tool_access.can_use_tool("user-1", "read_data")
 
         # Test privilege escalation detection
-        result = privilege_control.check_privilege_escalation(
-            current_level="user", requested_level="admin"
+        alert = privilege_monitor.detect_social_engineering(
+            "user-1", "session-1", "sudo rm -rf /"
         )
-        assert result is not None
+        assert alert is not None
 
     def test_multi_layer_security(self) -> None:
         """Test multiple security layers working together."""
-        monitor = SecurityMonitor()
+        _ = SecurityMonitor()
         sandbox = FunctionSandbox(limits=ResourceLimits(timeout=2.0))
-        access_control = AccessControl()
+        acl = AccessControlList()
+        # Create a role with read permission
+        from shieldgents.controls.access import Permission
+        acl.create_role("user", permissions={Permission.READ.value})
+        acl.create_user("user-1", "testuser", roles={"user"})
+        tool_access = ToolAccessControl(acl)
 
         def secure_operation(data: str) -> str:
             # Simulate a secure operation
@@ -53,8 +64,9 @@ class TestSecurityIntegration:
             return f"Processed: {data}"
 
         # Check access
-        access_granted = access_control.check_access("test_user", "secure_operation")
-        assert access_granted is not None
+        tool_access.register_tool("secure_operation", required_permission="read")
+        access_granted = tool_access.can_use_tool("user-1", "secure_operation")
+        assert access_granted
 
         # Execute in sandbox
         result = sandbox.execute(secure_operation, args=("test_data",))
@@ -71,9 +83,14 @@ class TestEndToEndWorkflow:
     def test_complete_security_workflow(self) -> None:
         """Test complete security workflow from input to output."""
         # Setup security components
-        monitor = SecurityMonitor()
-        sandbox = FunctionSandbox(limits=ResourceLimits(timeout=5.0, memory_limit=100))
-        access_control = AccessControl()
+        _ = SecurityMonitor()
+        sandbox = FunctionSandbox(limits=ResourceLimits(timeout=5.0, max_memory=100 * 1024 * 1024))
+        acl = AccessControlList()
+        # Create a role with read permission
+        from shieldgents.controls.access import Permission
+        acl.create_role("user", permissions={Permission.READ.value})
+        acl.create_user("user-1", "testuser", roles={"user"})
+        tool_access = ToolAccessControl(acl)
 
         # Define a workflow function
         def workflow(user_input: str) -> dict:
@@ -89,8 +106,9 @@ class TestEndToEndWorkflow:
             return {"status": "success", "data": processed}
 
         # Execute workflow with all security checks
-        access_check = access_control.check_access("test_user", "workflow")
-        assert access_check is not None
+        tool_access.register_tool("workflow", required_permission="read")
+        access_check = tool_access.can_use_tool("user-1", "workflow")
+        assert access_check
 
         result = sandbox.execute(workflow, args=("hello world",))
 

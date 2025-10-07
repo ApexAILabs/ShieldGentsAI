@@ -1,6 +1,5 @@
 """Tests for adversarial input detection module."""
 
-import pytest
 from shieldgents.controls.adversarial_detection import (
     AdversarialInputDetector,
     GradientAttackDetector,

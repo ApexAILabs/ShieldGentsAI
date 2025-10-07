@@ -1,10 +1,9 @@
 """Role-based access control (RBAC) for agent tools and resources."""
 
-from typing import Any, Dict, List, Optional, Set, Callable
+from typing import Any, Dict, Optional, Set, Callable
 from dataclasses import dataclass, field
 from enum import Enum
 import hashlib
-import json
 from functools import wraps
 
 

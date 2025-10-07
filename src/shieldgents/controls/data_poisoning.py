@@ -8,7 +8,6 @@ from typing import Dict, List, Optional, Any, Set
 from dataclasses import dataclass, field
 from enum import Enum
 import hashlib
-import json
 
 
 class PoisoningType(Enum):
