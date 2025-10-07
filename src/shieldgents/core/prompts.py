@@ -212,7 +212,15 @@ class PromptSanitizer:
         return sanitized
 
     def _remove_special_tokens(self, text: str) -> str:
-        """Remove special model tokens and delimiters."""
+        """
+        Remove special model tokens and delimiters.
+
+        Args:
+            text: Input text to sanitize
+
+        Returns:
+            Text with special tokens removed
+        """
         tokens_to_remove = [
             r"</system>",
             r"<system>",

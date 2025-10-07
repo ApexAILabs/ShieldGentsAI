@@ -35,6 +35,11 @@ class ContentSafetyFilter:
     """Filters harmful content requests."""
 
     def __init__(self):
+        """
+        Initialize content safety filter with keyword patterns.
+
+        Sets up detection patterns for malware, phishing, and exploit keywords.
+        """
         self.malware_keywords = [
             'keylogger', 'ransomware', 'trojan', 'backdoor',
             'rootkit', 'botnet', 'cryptolocker', 'payload',
@@ -54,7 +59,15 @@ class ContentSafetyFilter:
         ]
 
     def check_request(self, prompt: str) -> List[ContentSafetyAlert]:
-        """Check if request is attempting misuse."""
+        """
+        Check if request is attempting misuse.
+
+        Args:
+            prompt: User prompt to check for misuse patterns
+
+        Returns:
+            List of ContentSafetyAlert objects for detected violations
+        """
         alerts = []
         prompt_lower = prompt.lower()
 

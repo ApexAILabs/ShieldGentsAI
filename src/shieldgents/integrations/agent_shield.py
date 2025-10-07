@@ -40,7 +40,15 @@ class SecurityViolation(Exception):
 
 
 def _threat_to_severity(threat: ThreatLevel) -> Severity:
-    """Map prompt threat levels to monitoring severities."""
+    """
+    Map prompt threat levels to monitoring severities.
+
+    Args:
+        threat: ThreatLevel from prompt guard
+
+    Returns:
+        Corresponding Severity level for monitoring
+    """
     mapping = {
         ThreatLevel.SAFE: Severity.INFO,
         ThreatLevel.LOW: Severity.INFO,
@@ -427,6 +435,16 @@ class AgentShield:
     # ------------------------------------------------------------------
     @staticmethod
     def _extract_prompt(input_data: Any, input_key: Optional[str]) -> str:
+        """
+        Extract prompt string from various input formats.
+
+        Args:
+            input_data: Input data (dict, list, tuple, or string)
+            input_key: Optional key to extract from dict
+
+        Returns:
+            Extracted prompt string
+        """
         if isinstance(input_data, dict):
             key = input_key or "input"
             return str(input_data.get(key, next(iter(input_data.values()), "")))
@@ -440,6 +458,17 @@ class AgentShield:
         sanitized_prompt: str,
         input_key: Optional[str],
     ) -> Any:
+        """
+        Apply sanitized prompt back to the original input structure.
+
+        Args:
+            original_input: Original input data structure
+            sanitized_prompt: Sanitized prompt string
+            input_key: Optional key for dict structures
+
+        Returns:
+            Input data with sanitized prompt applied
+        """
         if isinstance(original_input, dict):
             key = input_key or "input"
             updated = dict(original_input)

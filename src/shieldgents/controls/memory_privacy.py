@@ -29,6 +29,13 @@ class MemoryPrivacyManager:
         default_ttl: float = 86400.0,  # 24 hours
         require_consent: bool = True,
     ):
+        """
+        Initialize memory privacy manager.
+
+        Args:
+            default_ttl: Default time-to-live for memories in seconds (default: 24 hours)
+            require_consent: Require explicit consent for storing sensitive data
+        """
         self.default_ttl = default_ttl
         self.require_consent = require_consent
         self.memories: Dict[str, List[MemoryEntry]] = {}
@@ -41,7 +48,16 @@ class MemoryPrivacyManager:
         sensitive: bool = False,
         consent: bool = False,
     ) -> None:
-        """Store memory with privacy controls."""
+        """
+        Store memory with privacy controls.
+
+        Args:
+            session_id: Session identifier for grouping memories
+            content: Memory content to store
+            user_id: Optional user identifier for access control
+            sensitive: Whether this is sensitive data requiring consent
+            consent: Whether user has given consent for storing this data
+        """
         import time
 
         if self.require_consent and sensitive and not consent:
@@ -66,7 +82,16 @@ class MemoryPrivacyManager:
         session_id: str,
         user_id: Optional[str] = None,
     ) -> List[str]:
-        """Retrieve memory with access control."""
+        """
+        Retrieve memory with access control.
+
+        Args:
+            session_id: Session identifier to retrieve memories from
+            user_id: Optional user identifier for access control
+
+        Returns:
+            List of memory content strings that passed access control checks
+        """
         import time
 
         if session_id not in self.memories:
@@ -93,7 +118,12 @@ class MemoryPrivacyManager:
         return valid_memories
 
     def clear_expired(self) -> int:
-        """Clear expired memories."""
+        """
+        Clear expired memories.
+
+        Returns:
+            Number of expired memories that were cleared
+        """
         import time
 
         current_time = time.time()

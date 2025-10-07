@@ -36,13 +36,23 @@ class AuditEvent:
     metadata: Dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary."""
+        """
+        Convert to dictionary.
+
+        Returns:
+            Dictionary representation of the audit event
+        """
         data = asdict(self)
         data["event_type"] = self.event_type.value
         return data
 
     def to_json(self) -> str:
-        """Convert to JSON string."""
+        """
+        Convert to JSON string.
+
+        Returns:
+            JSON string representation of the audit event
+        """
         return json.dumps(self.to_dict(), indent=2)
 
 
@@ -127,7 +137,12 @@ class AuditLogger:
         return event
 
     def _generate_event_id(self) -> str:
-        """Generate unique event ID."""
+        """
+        Generate unique event ID.
+
+        Returns:
+            UUID string for the event
+        """
         import uuid
         return str(uuid.uuid4())
 
@@ -135,7 +150,14 @@ class AuditLogger:
         """
         Create signature for event.
 
-        In production, use proper HMAC with secret key.
+        Args:
+            event: Audit event to sign
+
+        Returns:
+            SHA256 hash signature (first 16 chars)
+
+        Note:
+            In production, use proper HMAC with secret key.
         """
         data = json.dumps(event.to_dict(), sort_keys=True)
         return hashlib.sha256(data.encode()).hexdigest()[:16]
