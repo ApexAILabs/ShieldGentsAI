@@ -312,7 +312,7 @@ class DataLeakageMonitor:
             "suspicious_outputs": len(suspicious),
             "suspicious_rate": len(suspicious) / len(self.detection_history),
             "methods_frequency": {m.value: c for m, c in method_counts.items()},
-            "avg_confidence": sum(d.confidence for d in suspicious) / len(suspicious)
-            if suspicious
-            else 0.0,
+            "avg_confidence": (
+                sum(d.confidence for d in suspicious) / len(suspicious) if suspicious else 0.0
+            ),
         }

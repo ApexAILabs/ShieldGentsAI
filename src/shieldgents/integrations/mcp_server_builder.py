@@ -371,9 +371,9 @@ class ShieldedMCPServer:
             "statistics": {
                 "total_requests": self.request_count,
                 "total_errors": self.error_count,
-                "error_rate": self.error_count / self.request_count
-                if self.request_count > 0
-                else 0.0,
+                "error_rate": (
+                    self.error_count / self.request_count if self.request_count > 0 else 0.0
+                ),
             },
         }
 

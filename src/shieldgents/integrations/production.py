@@ -387,19 +387,23 @@ class ProductionAgent:
             "request_count": self.metrics.request_count,
             "success_count": self.metrics.success_count,
             "error_count": self.metrics.error_count,
-            "error_rate": self.metrics.error_count / self.metrics.request_count
-            if self.metrics.request_count > 0
-            else 0,
-            "avg_latency_ms": self.metrics.total_latency_ms / self.metrics.success_count
-            if self.metrics.success_count > 0
-            else 0,
+            "error_rate": (
+                self.metrics.error_count / self.metrics.request_count
+                if self.metrics.request_count > 0
+                else 0
+            ),
+            "avg_latency_ms": (
+                self.metrics.total_latency_ms / self.metrics.success_count
+                if self.metrics.success_count > 0
+                else 0
+            ),
             "p50_latency_ms": self.metrics.p50_latency_ms,
             "p95_latency_ms": self.metrics.p95_latency_ms,
             "p99_latency_ms": self.metrics.p99_latency_ms,
             "uptime_seconds": (datetime.now() - self.startup_time).total_seconds(),
-            "circuit_breaker_state": self.circuit_breaker.state.value
-            if self.circuit_breaker
-            else "disabled",
+            "circuit_breaker_state": (
+                self.circuit_breaker.state.value if self.circuit_breaker else "disabled"
+            ),
         }
 
     def _update_latency_percentiles(self):

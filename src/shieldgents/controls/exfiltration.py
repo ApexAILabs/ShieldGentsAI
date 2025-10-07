@@ -152,9 +152,9 @@ class ExfiltrationDetector:
                 method=ExfiltrationMethod.BASE64_ENCODING,
                 description=f"Base64-encoded data detected ({len(valid_base64)} instances)",
                 confidence=0.9,
-                evidence=valid_base64[0][:100] + "..."
-                if len(valid_base64[0]) > 100
-                else valid_base64[0],
+                evidence=(
+                    valid_base64[0][:100] + "..." if len(valid_base64[0]) > 100 else valid_base64[0]
+                ),
                 should_block=should_block,
                 metadata={
                     "count": len(valid_base64),
