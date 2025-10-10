@@ -2,10 +2,16 @@ name: CI/CD Pipeline
 
 on:
   pull_request:
-    - master
+    branches: [ master ]
+    types:
+      - opened
+      - reopened
+      - ready_for_review
+      - synchronize   # ← runs on each new commit pushed to the PR
+      - closed        # ← so we can detect merges (closed + merged == true)
   push:
-    branches: 
-      - master
+    branches: [ master ]
+
 
 jobs:
   lint:
