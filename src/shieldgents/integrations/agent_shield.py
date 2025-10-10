@@ -22,6 +22,7 @@ from shieldgents.core.behavior import (
 from shieldgents.core.sandbox import ExecutionResult, FunctionSandbox, ResourceLimits
 from shieldgents.core.monitor import EventType, SecurityMonitor, Severity
 from shieldgents.controls.access import ToolAccessControl
+from shieldgents.controls.external_content import ExternalContentGuard, ContentScanResult
 
 
 class SecurityViolation(Exception):
@@ -75,6 +76,14 @@ class OutputCheck:
     details: Dict[str, Any]
 
 
+@dataclass
+class ExternalContentCheck:
+    """Structured result for external content inspection."""
+
+    sanitized_content: str
+    scan: ContentScanResult
+
+
 class AgentShield:
     """Aggregate security layer for agent frameworks.
 
@@ -91,8 +100,10 @@ class AgentShield:
         sandbox: Optional[FunctionSandbox] = None,
         monitor: Optional[SecurityMonitor] = None,
         tool_access: Optional[ToolAccessControl] = None,
+        external_content_guard: Optional[ExternalContentGuard] = None,
         block_on_prompt_threat: bool = True,
         block_on_output_violation: bool = True,
+        block_on_external_content_threat: bool = True,
         sandbox_limits: Optional[ResourceLimits] = None,
     ) -> None:
         self.prompt_guard = prompt_guard or PromptGuard()
@@ -102,8 +113,10 @@ class AgentShield:
         self.sandbox = sandbox or FunctionSandbox(limits=sandbox_limits)
         self.monitor = monitor or SecurityMonitor()
         self.tool_access = tool_access
+        self.external_content_guard = external_content_guard or ExternalContentGuard()
         self.block_on_prompt_threat = block_on_prompt_threat
         self.block_on_output_violation = block_on_output_violation
+        self.block_on_external_content_threat = block_on_external_content_threat
         self._action_observers: list[Callable[[AgentAction], None]] = []
 
     # ------------------------------------------------------------------
@@ -308,6 +321,130 @@ class AgentShield:
             )
 
         return execution.return_value
+
+    def guard_external_content(
+        self,
+        content: Any,
+        *,
+        source_url: Optional[str] = None,
+        agent_id: Optional[str] = None,
+        metadata: Optional[Dict[str, Any]] = None,
+        block: Optional[bool] = None,
+    ) -> ExternalContentCheck:
+        """
+        Guard external content from web scraping/crawling before agent processes it.
+
+        Args:
+            content: External content to guard (string or data structure)
+            source_url: Optional source URL where content was fetched
+            agent_id: Optional agent identifier
+            metadata: Optional metadata for logging
+            block: Override block decision (defaults to block_on_external_content_threat)
+
+        Returns:
+            ExternalContentCheck with scan results
+
+        Raises:
+            SecurityViolation: If content is unsafe and blocking is enabled
+        """
+        block_decision = (
+            self.block_on_external_content_threat if block is None else block
+        )
+
+        # Convert content to string if needed
+        content_str = content if isinstance(content, str) else str(content)
+
+        # Scan external content
+        scan = self.external_content_guard.guard_scraped_content(
+            content_str, source_url
+        )
+
+        if not scan.is_safe:
+            event_metadata = {
+                "threats": scan.detected_threats,
+                "threat_level": scan.threat_level.value,
+                "source_url": source_url,
+            }
+            if metadata:
+                event_metadata.update(metadata)
+
+            self.monitor.record_event(
+                event_type=EventType.DATA_ACCESS,
+                severity=_threat_to_severity(scan.threat_level),
+                message="External content threat detected",
+                agent_id=agent_id,
+                metadata=event_metadata,
+            )
+
+            if block_decision:
+                raise SecurityViolation(
+                    message=f"External content blocked ({scan.threat_level.value})",
+                    violations=scan.detected_threats,
+                    context=event_metadata,
+                )
+
+        sanitized = scan.sanitized_content or content_str
+        return ExternalContentCheck(sanitized_content=sanitized, scan=scan)
+
+    def execute_web_tool(
+        self,
+        tool: Callable[..., Any],
+        *,
+        tool_name: str,
+        args: Tuple[Any, ...] = (),
+        kwargs: Optional[Dict[str, Any]] = None,
+        agent_id: Optional[str] = None,
+        risk_assessor: Optional[Callable[[str, Dict[str, Any]], RiskLevel]] = None,
+        guard_result: bool = True,
+    ) -> Any:
+        """
+        Execute a web scraping/crawling tool and automatically guard its output.
+
+        This is a specialized version of execute_tool that adds external content
+        guarding on top of standard tool execution security.
+
+        Args:
+            tool: Web scraping/crawling tool to execute
+            tool_name: Name of the tool
+            args: Positional arguments for the tool
+            kwargs: Keyword arguments for the tool
+            agent_id: Optional agent identifier
+            risk_assessor: Optional risk assessment function
+            guard_result: Whether to guard the tool's return value
+
+        Returns:
+            Tool result (sanitized if guard_result=True and threats detected)
+
+        Raises:
+            SecurityViolation: If tool execution fails or content is unsafe
+        """
+        # First execute the tool normally
+        result = self.execute_tool(
+            tool,
+            tool_name=tool_name,
+            args=args,
+            kwargs=kwargs,
+            agent_id=agent_id,
+            risk_assessor=risk_assessor,
+        )
+
+        # Guard the result if it's external content
+        if guard_result:
+            # Try to extract URL from kwargs/args
+            source_url = kwargs.get("url") if kwargs else None
+            if not source_url and args:
+                source_url = args[0] if isinstance(args[0], str) else None
+
+            content_check = self.guard_external_content(
+                result,
+                source_url=source_url,
+                agent_id=agent_id,
+                metadata={"tool": tool_name},
+            )
+
+            return content_check.sanitized_content
+
+        return result
 
     # ------------------------------------------------------------------
     # Framework adapters
