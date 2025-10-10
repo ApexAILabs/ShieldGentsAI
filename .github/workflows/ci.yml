@@ -143,6 +143,14 @@ jobs:
           BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
+          # Check if secrets are set
+          if [ -z "$TG_TOKEN" ] || [ -z "$CHAT_ID" ]; then
+            echo "ERROR: TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID is not set"
+            echo "TG_TOKEN length: ${#TG_TOKEN}"
+            echo "CHAT_ID length: ${#CHAT_ID}"
+            exit 0
+          fi
+
           set -euo pipefail
           API_URL="https://api.telegram.org/bot${TG_TOKEN}/sendMessage"
           MSG="📋 <b>New Pull Request</b>
