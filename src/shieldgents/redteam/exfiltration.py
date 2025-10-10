@@ -16,6 +16,7 @@ from enum import Enum
 
 class ExfiltrationMethod(Enum):
     """Types of exfiltration methods detected."""
+
     BASE64_ENCODING = "base64_encoding"
     HEX_ENCODING = "hex_encoding"
     BINARY_ENCODING = "binary_encoding"
@@ -29,6 +30,7 @@ class ExfiltrationMethod(Enum):
 @dataclass
 class ExfiltrationDetection:
     """Result of exfiltration detection."""
+
     is_suspicious: bool
     methods_detected: List[ExfiltrationMethod]
     confidence: float  # 0.0 to 1.0
@@ -60,10 +62,10 @@ class ExfiltrationDetector:
         self.max_output_size = max_output_size
 
         # Patterns for encoded data
-        self.base64_pattern = re.compile(r'[A-Za-z0-9+/]{20,}={0,2}')
-        self.hex_pattern = re.compile(r'(?:0x)?[0-9a-fA-F]{32,}')
-        self.binary_pattern = re.compile(r'[01]{32,}')
-        self.url_encoded_pattern = re.compile(r'(?:%[0-9A-Fa-f]{2}){5,}')
+        self.base64_pattern = re.compile(r"[A-Za-z0-9+/]{20,}={0,2}")
+        self.hex_pattern = re.compile(r"(?:0x)?[0-9a-fA-F]{32,}")
+        self.binary_pattern = re.compile(r"[01]{32,}")
+        self.url_encoded_pattern = re.compile(r"(?:%[0-9A-Fa-f]{2}){5,}")
 
     def scan(self, output: str, context: Optional[Dict[str, Any]] = None) -> ExfiltrationDetection:
         """
@@ -83,7 +85,7 @@ class ExfiltrationDetector:
         # 1. Check output size
         if len(output) > self.max_output_size:
             methods_detected.append(ExfiltrationMethod.UNUSUAL_VOLUME)
-            metadata['output_size'] = len(output)
+            metadata["output_size"] = len(output)
 
         # 2. Detect base64 encoding
         base64_matches = self.base64_pattern.findall(output)
@@ -97,33 +99,33 @@ class ExfiltrationDetector:
 
             if valid_base64:
                 methods_detected.append(ExfiltrationMethod.BASE64_ENCODING)
-                metadata['base64_count'] = len(valid_base64)
+                metadata["base64_count"] = len(valid_base64)
 
         # 3. Detect hex encoding
         hex_matches = self.hex_pattern.findall(output)
         if hex_matches:
             methods_detected.append(ExfiltrationMethod.HEX_ENCODING)
             suspicious_segments.extend([h[:50] + "..." for h in hex_matches[:3]])
-            metadata['hex_count'] = len(hex_matches)
+            metadata["hex_count"] = len(hex_matches)
 
         # 4. Detect binary strings
         binary_matches = self.binary_pattern.findall(output)
         if binary_matches:
             methods_detected.append(ExfiltrationMethod.BINARY_ENCODING)
-            metadata['binary_count'] = len(binary_matches)
+            metadata["binary_count"] = len(binary_matches)
 
         # 5. Detect URL encoding
         url_encoded = self.url_encoded_pattern.findall(output)
         if url_encoded:
             methods_detected.append(ExfiltrationMethod.ENCODED_URL)
-            metadata['url_encoded_count'] = len(url_encoded)
+            metadata["url_encoded_count"] = len(url_encoded)
 
         # 6. Check encoded content ratio
         encoded_length = sum(len(m) for m in base64_matches + hex_matches + binary_matches)
         total_length = len(output)
         if total_length > 0:
             encoded_ratio = encoded_length / total_length
-            metadata['encoded_ratio'] = encoded_ratio
+            metadata["encoded_ratio"] = encoded_ratio
 
             if encoded_ratio > self.max_encoded_ratio:
                 methods_detected.append(ExfiltrationMethod.SUSPICIOUS_FORMAT)
@@ -185,17 +187,15 @@ class ExfiltrationDetector:
 
         # Look for repeated substrings
         for i in range(len(text) - min_pattern_length * 2):
-            pattern = text[i:i + min_pattern_length]
-            rest = text[i + min_pattern_length:]
+            pattern = text[i : i + min_pattern_length]
+            rest = text[i + min_pattern_length :]
             if pattern in rest:
                 return True
 
         return False
 
     def _calculate_confidence(
-        self,
-        methods: List[ExfiltrationMethod],
-        metadata: Dict[str, Any]
+        self, methods: List[ExfiltrationMethod], metadata: Dict[str, Any]
     ) -> float:
         """Calculate confidence score based on detected methods."""
         if not methods:
@@ -219,34 +219,30 @@ class ExfiltrationDetector:
             score *= 1.3
 
         # Boost if high encoded ratio
-        if metadata.get('encoded_ratio', 0) > 0.5:
+        if metadata.get("encoded_ratio", 0) > 0.5:
             score *= 1.2
 
         return min(score, 1.0)
 
-    def _sanitize_output(
-        self,
-        output: str,
-        methods: List[ExfiltrationMethod]
-    ) -> str:
+    def _sanitize_output(self, output: str, methods: List[ExfiltrationMethod]) -> str:
         """Sanitize output by removing/redacting suspicious content."""
         sanitized = output
 
         # Remove base64 blocks
         if ExfiltrationMethod.BASE64_ENCODING in methods:
-            sanitized = self.base64_pattern.sub('[REDACTED-BASE64]', sanitized)
+            sanitized = self.base64_pattern.sub("[REDACTED-BASE64]", sanitized)
 
         # Remove hex blocks
         if ExfiltrationMethod.HEX_ENCODING in methods:
-            sanitized = self.hex_pattern.sub('[REDACTED-HEX]', sanitized)
+            sanitized = self.hex_pattern.sub("[REDACTED-HEX]", sanitized)
 
         # Remove binary blocks
         if ExfiltrationMethod.BINARY_ENCODING in methods:
-            sanitized = self.binary_pattern.sub('[REDACTED-BINARY]', sanitized)
+            sanitized = self.binary_pattern.sub("[REDACTED-BINARY]", sanitized)
 
         # Truncate if too long
         if ExfiltrationMethod.UNUSUAL_VOLUME in methods:
-            sanitized = sanitized[:self.max_output_size] + "\n[OUTPUT TRUNCATED]"
+            sanitized = sanitized[: self.max_output_size] + "\n[OUTPUT TRUNCATED]"
 
         return sanitized
 
@@ -279,30 +275,28 @@ class DataLeakageMonitor:
 
         # Keep only recent history
         if len(self.detection_history) > self.window_size:
-            self.detection_history = self.detection_history[-self.window_size:]
+            self.detection_history = self.detection_history[-self.window_size :]
 
         # Analyze trends
-        recent_suspicious = sum(
-            1 for d in self.detection_history[-10:]
-            if d.is_suspicious
-        )
+        recent_suspicious = sum(1 for d in self.detection_history[-10:] if d.is_suspicious)
 
         should_alert = recent_suspicious >= self.alert_threshold
 
         return {
-            'should_alert': should_alert,
-            'recent_suspicious_count': recent_suspicious,
-            'total_detections': len(self.detection_history),
-            'suspicious_rate': sum(1 for d in self.detection_history if d.is_suspicious) / len(self.detection_history),
+            "should_alert": should_alert,
+            "recent_suspicious_count": recent_suspicious,
+            "total_detections": len(self.detection_history),
+            "suspicious_rate": sum(1 for d in self.detection_history if d.is_suspicious)
+            / len(self.detection_history),
         }
 
     def get_statistics(self) -> Dict[str, Any]:
         """Get monitoring statistics."""
         if not self.detection_history:
             return {
-                'total_outputs': 0,
-                'suspicious_outputs': 0,
-                'methods_frequency': {},
+                "total_outputs": 0,
+                "suspicious_outputs": 0,
+                "methods_frequency": {},
             }
 
         suspicious = [d for d in self.detection_history if d.is_suspicious]
@@ -314,9 +308,11 @@ class DataLeakageMonitor:
                 method_counts[method] = method_counts.get(method, 0) + 1
 
         return {
-            'total_outputs': len(self.detection_history),
-            'suspicious_outputs': len(suspicious),
-            'suspicious_rate': len(suspicious) / len(self.detection_history),
-            'methods_frequency': {m.value: c for m, c in method_counts.items()},
-            'avg_confidence': sum(d.confidence for d in suspicious) / len(suspicious) if suspicious else 0.0,
+            "total_outputs": len(self.detection_history),
+            "suspicious_outputs": len(suspicious),
+            "suspicious_rate": len(suspicious) / len(self.detection_history),
+            "methods_frequency": {m.value: c for m, c in method_counts.items()},
+            "avg_confidence": (
+                sum(d.confidence for d in suspicious) / len(suspicious) if suspicious else 0.0
+            ),
         }

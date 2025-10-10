@@ -23,13 +23,13 @@ from shieldgents.behavior import (
     OutputGuard,
     AgentAction,
     ActionType,
-    RiskLevel,
 )
 
 
 # ============================================================================
 # Example 1: WHY BEHAVIORAL SECURITY MATTERS
 # ============================================================================
+
 
 def example_why_behavioral_security():
     """Show why we need to monitor BEHAVIOR, not just inputs."""
@@ -81,6 +81,7 @@ def example_why_behavioral_security():
 # Example 2: MONITORING AGENT ACTIONS
 # ============================================================================
 
+
 def example_monitor_agent_actions():
     """Monitor what the agent actually DOES."""
 
@@ -99,14 +100,14 @@ def example_monitor_agent_actions():
         },
         forbidden_tools={
             "drop_table",  # Dangerous!
-            "delete_all",   # Dangerous!
-            "truncate",     # Dangerous!
+            "delete_all",  # Dangerous!
+            "truncate",  # Dangerous!
         },
         max_tool_calls_per_minute=10,
     )
 
     monitor = BehaviorMonitor(policy)
-    tool_guard = ToolExecutionGuard(monitor)
+    _ = ToolExecutionGuard(monitor)  # Initialize guard
 
     print("📋 Policy configured:")
     print(f"   Allowed tools: {policy.allowed_tools}")
@@ -126,9 +127,9 @@ def example_monitor_agent_actions():
     )
 
     result1 = monitor.check_action(action1)
-    print(f"1. read_table(users)")
+    print("1. read_table(users)")
     print(f"   {'✅ ALLOWED' if result1['allowed'] else '🚫 BLOCKED'}")
-    if result1['allowed']:
+    if result1["allowed"]:
         monitor.record_action(action1, "success")
     print()
 
@@ -141,9 +142,9 @@ def example_monitor_agent_actions():
     )
 
     result2 = monitor.check_action(action2)
-    print(f"2. drop_table(users)")
+    print("2. drop_table(users)")
     print(f"   {'✅ ALLOWED' if result2['allowed'] else '🚫 BLOCKED'}")
-    if not result2['allowed']:
+    if not result2["allowed"]:
         print(f"   Reason: {result2['violations']}")
     print()
 
@@ -157,7 +158,7 @@ def example_monitor_agent_actions():
             agent_id="agent-001",
         )
         result = monitor.check_action(action)
-        if not result['allowed']:
+        if not result["allowed"]:
             print(f"   Call {i+1}: 🚫 BLOCKED - {result['violations'][0]}")
             break
         monitor.record_action(action, "success")
@@ -168,6 +169,7 @@ def example_monitor_agent_actions():
 # ============================================================================
 # Example 3: DANGEROUS ACTION SEQUENCES
 # ============================================================================
+
 
 def example_dangerous_sequences():
     """Detect dangerous sequences of actions."""
@@ -212,7 +214,7 @@ def example_dangerous_sequences():
         )
         result = monitor.check_action(action)
         print(f"   {action_name}: {'✅' if result['allowed'] else '🚫'}")
-        if result['allowed']:
+        if result["allowed"]:
             monitor.record_action(action)
     print("   ✅ Safe sequence")
     print()
@@ -231,10 +233,10 @@ def example_dangerous_sequences():
             parameters={},
         )
         result = monitor.check_action(action)
-        status = '✅' if result['allowed'] else '🚫'
+        status = "✅" if result["allowed"] else "🚫"
         print(f"   {action_name}: {status}")
 
-        if not result['allowed']:
+        if not result["allowed"]:
             print(f"   ⚠️  BLOCKED: {result['violations'][0]}")
             break
 
@@ -246,6 +248,7 @@ def example_dangerous_sequences():
 # ============================================================================
 # Example 4: OUTPUT SECURITY
 # ============================================================================
+
 
 def example_output_security():
     """Guard agent OUTPUT, not just input."""
@@ -282,10 +285,10 @@ def example_output_security():
 
         result = output_guard.check_output(output)
 
-        if result['safe']:
-            print(f"   ✅ SAFE")
+        if result["safe"]:
+            print("   ✅ SAFE")
         else:
-            print(f"   🚫 BLOCKED")
+            print("   🚫 BLOCKED")
             print(f"   Violations: {result['violations']}")
             print(f"   Sanitized: {result['sanitized_output'][:50]}...")
 
@@ -295,6 +298,7 @@ def example_output_security():
 # ============================================================================
 # Example 5: COMPLETE BEHAVIORAL SECURITY
 # ============================================================================
+
 
 def example_complete_security():
     """Complete example with all behavioral security."""
@@ -342,7 +346,7 @@ def example_complete_security():
         agent_id="agent-prod",
     )
 
-    if check['allowed']:
+    if check["allowed"]:
         print("   ✅ Allowed - executing...")
         tool_guard.record_execution_result("read_data", success=True)
         print("   ✅ Execution successful")
@@ -358,7 +362,7 @@ def example_complete_security():
         agent_id="agent-prod",
     )
 
-    if check['allowed']:
+    if check["allowed"]:
         print("   ✅ Allowed - executing...")
     else:
         print(f"   🚫 BLOCKED: {check['violations']}")
@@ -369,7 +373,7 @@ def example_complete_security():
     agent_output = "Analysis complete! Here are the results... [password: admin123]"
     output_check = output_guard.check_output(agent_output)
 
-    if output_check['safe']:
+    if output_check["safe"]:
         print("   ✅ Output is safe")
     else:
         print(f"   ⚠️  Output sanitized: {output_check['violations']}")
@@ -385,6 +389,7 @@ def example_complete_security():
 # ============================================================================
 # MAIN
 # ============================================================================
+
 
 def main():
     print("\n")

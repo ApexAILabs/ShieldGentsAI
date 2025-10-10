@@ -9,7 +9,7 @@ Provides security controls for MCP servers including:
 - Data leakage prevention in MCP responses
 """
 
-from typing import Dict, List, Optional, Any, Callable, Set
+from typing import Dict, List, Optional, Any, Set
 from dataclasses import dataclass, field
 from enum import Enum
 from datetime import datetime
@@ -19,6 +19,7 @@ import json
 
 class MCPThreatType(Enum):
     """Types of MCP security threats."""
+
     MALICIOUS_TOOL_RESPONSE = "malicious_tool_response"
     UNAUTHORIZED_DATA_ACCESS = "unauthorized_data_access"
     EXCESSIVE_RESOURCE_USAGE = "excessive_resource_usage"
@@ -32,6 +33,7 @@ class MCPThreatType(Enum):
 @dataclass
 class MCPServerProfile:
     """Profile of an MCP server."""
+
     server_id: str
     server_url: str
     is_trusted: bool = False
@@ -46,6 +48,7 @@ class MCPServerProfile:
 @dataclass
 class MCPRequest:
     """MCP tool request."""
+
     server_id: str
     tool_name: str
     parameters: Dict[str, Any]
@@ -57,6 +60,7 @@ class MCPRequest:
 @dataclass
 class MCPResponse:
     """MCP tool response."""
+
     server_id: str
     tool_name: str
     content: Any
@@ -67,6 +71,7 @@ class MCPResponse:
 @dataclass
 class MCPSecurityAlert:
     """Security alert for MCP operations."""
+
     threat_type: MCPThreatType
     severity: str  # "low", "medium", "high", "critical"
     description: str
@@ -163,20 +168,17 @@ class MCPRequestValidator:
 
         # Dangerous patterns in parameters
         self.injection_patterns = [
-            r'<script',
-            r'javascript:',
-            r'eval\(',
-            r'exec\(',
-            r'__import__',
-            r'\.\./\.\.',  # Path traversal
-            r';\s*rm\s+-rf',  # Command injection
-            r'\$\{.*\}',  # Variable injection
+            r"<script",
+            r"javascript:",
+            r"eval\(",
+            r"exec\(",
+            r"__import__",
+            r"\.\./\.\.",  # Path traversal
+            r";\s*rm\s+-rf",  # Command injection
+            r"\$\{.*\}",  # Variable injection
         ]
 
-    def validate_request(
-        self,
-        request: MCPRequest
-    ) -> tuple[bool, Optional[MCPSecurityAlert]]:
+    def validate_request(self, request: MCPRequest) -> tuple[bool, Optional[MCPSecurityAlert]]:
         """
         Validate MCP request.
 
@@ -216,7 +218,7 @@ class MCPRequestValidator:
                     description=f"Injection pattern detected in parameters: {pattern}",
                     server_id=request.server_id,
                     tool_name=request.tool_name,
-                    evidence={'pattern': pattern, 'parameters': request.parameters},
+                    evidence={"pattern": pattern, "parameters": request.parameters},
                 )
 
         # 4. Check for credential exposure in parameters
@@ -278,25 +280,33 @@ class MCPResponseValidator:
 
         # 1. Check response size
         if response.size_bytes > server_profile.max_response_size:
-            return False, MCPSecurityAlert(
-                threat_type=MCPThreatType.EXCESSIVE_RESOURCE_USAGE,
-                severity="medium",
-                description=f"Response size {response.size_bytes} exceeds limit {server_profile.max_response_size}",
-                server_id=response.server_id,
-                tool_name=response.tool_name,
-            ), None
+            return (
+                False,
+                MCPSecurityAlert(
+                    threat_type=MCPThreatType.EXCESSIVE_RESOURCE_USAGE,
+                    severity="medium",
+                    description=f"Response size {response.size_bytes} exceeds limit {server_profile.max_response_size}",
+                    server_id=response.server_id,
+                    tool_name=response.tool_name,
+                ),
+                None,
+            )
 
         # 2. Check for data exfiltration
         exfil_result = self.exfil_detector.scan(content_str)
         if exfil_result.is_suspicious:
-            return False, MCPSecurityAlert(
-                threat_type=MCPThreatType.MALICIOUS_TOOL_RESPONSE,
-                severity="high",
-                description=f"Exfiltration attempt in response: {exfil_result.methods_detected}",
-                server_id=response.server_id,
-                tool_name=response.tool_name,
-                evidence={'methods': [m.value for m in exfil_result.methods_detected]},
-            ), exfil_result.sanitized_output
+            return (
+                False,
+                MCPSecurityAlert(
+                    threat_type=MCPThreatType.MALICIOUS_TOOL_RESPONSE,
+                    severity="high",
+                    description=f"Exfiltration attempt in response: {exfil_result.methods_detected}",
+                    server_id=response.server_id,
+                    tool_name=response.tool_name,
+                    evidence={"methods": [m.value for m in exfil_result.methods_detected]},
+                ),
+                exfil_result.sanitized_output,
+            )
 
         # 3. Check for PII leakage
         pii_result = self.pii_detector.scan(content_str)
@@ -314,27 +324,31 @@ class MCPResponseValidator:
 
         # 4. Check for prompt injection in response
         if self._contains_prompt_injection(content_str):
-            return False, MCPSecurityAlert(
-                threat_type=MCPThreatType.PROMPT_INJECTION_VIA_TOOL,
-                severity="critical",
-                description="Prompt injection detected in MCP response",
-                server_id=response.server_id,
-                tool_name=response.tool_name,
-            ), None
+            return (
+                False,
+                MCPSecurityAlert(
+                    threat_type=MCPThreatType.PROMPT_INJECTION_VIA_TOOL,
+                    severity="critical",
+                    description="Prompt injection detected in MCP response",
+                    server_id=response.server_id,
+                    tool_name=response.tool_name,
+                ),
+                None,
+            )
 
         return True, None, None
 
     def _contains_prompt_injection(self, text: str) -> bool:
         """Check for prompt injection in response."""
         injection_indicators = [
-            'ignore all previous instructions',
-            'ignore all instructions',
-            'disregard previous',
-            'new instructions:',
-            'system:',
-            'assistant:',
-            '<|im_start|>',
-            '<|im_end|>',
+            "ignore all previous instructions",
+            "ignore all instructions",
+            "disregard previous",
+            "new instructions:",
+            "system:",
+            "assistant:",
+            "<|im_start|>",
+            "<|im_end|>",
         ]
 
         text_lower = text.lower()
@@ -398,15 +412,15 @@ class MCPSecurityMonitor:
         # Track stats
         if server_id not in self.server_stats:
             self.server_stats[server_id] = {
-                'total_requests': 0,
-                'blocked_requests': 0,
-                'tools_used': {},
+                "total_requests": 0,
+                "blocked_requests": 0,
+                "tools_used": {},
             }
 
-        self.server_stats[server_id]['total_requests'] += 1
+        self.server_stats[server_id]["total_requests"] += 1
 
         if not is_valid:
-            self.server_stats[server_id]['blocked_requests'] += 1
+            self.server_stats[server_id]["blocked_requests"] += 1
             self.alerts.append(alert)
 
             # Decrease server reputation
@@ -414,7 +428,7 @@ class MCPSecurityMonitor:
 
         else:
             # Track tool usage
-            tools_used = self.server_stats[server_id]['tools_used']
+            tools_used = self.server_stats[server_id]["tools_used"]
             tools_used[tool_name] = tools_used.get(tool_name, 0) + 1
 
         return is_valid, alert
@@ -459,7 +473,7 @@ class MCPSecurityMonitor:
             tool_name=tool_name,
             content=content,
             metadata=metadata or {},
-            size_bytes=len(content_str.encode('utf-8')),
+            size_bytes=len(content_str.encode("utf-8")),
         )
 
         # Validate response
@@ -483,33 +497,33 @@ class MCPSecurityMonitor:
         """Get statistics for a server."""
         if server_id not in self.server_stats:
             return {
-                'server_id': server_id,
-                'total_requests': 0,
-                'blocked_requests': 0,
-                'block_rate': 0.0,
-                'reputation': 0.0,
+                "server_id": server_id,
+                "total_requests": 0,
+                "blocked_requests": 0,
+                "block_rate": 0.0,
+                "reputation": 0.0,
             }
 
         stats = self.server_stats[server_id]
-        total = stats['total_requests']
-        blocked = stats['blocked_requests']
+        total = stats["total_requests"]
+        blocked = stats["blocked_requests"]
 
         return {
-            'server_id': server_id,
-            'total_requests': total,
-            'blocked_requests': blocked,
-            'block_rate': blocked / total if total > 0 else 0.0,
-            'reputation': self.registry.server_reputation.get(server_id, 0.0),
-            'tools_used': stats['tools_used'],
+            "server_id": server_id,
+            "total_requests": total,
+            "blocked_requests": blocked,
+            "block_rate": blocked / total if total > 0 else 0.0,
+            "reputation": self.registry.server_reputation.get(server_id, 0.0),
+            "tools_used": stats["tools_used"],
         }
 
     def get_alerts_summary(self) -> Dict[str, Any]:
         """Get summary of all alerts."""
         if not self.alerts:
             return {
-                'total_alerts': 0,
-                'by_threat_type': {},
-                'by_severity': {},
+                "total_alerts": 0,
+                "by_threat_type": {},
+                "by_severity": {},
             }
 
         by_threat = {}
@@ -520,19 +534,19 @@ class MCPSecurityMonitor:
             by_severity[alert.severity] = by_severity.get(alert.severity, 0) + 1
 
         return {
-            'total_alerts': len(self.alerts),
-            'by_threat_type': by_threat,
-            'by_severity': by_severity,
-            'recent_alerts': [
+            "total_alerts": len(self.alerts),
+            "by_threat_type": by_threat,
+            "by_severity": by_severity,
+            "recent_alerts": [
                 {
-                    'threat_type': a.threat_type.value,
-                    'severity': a.severity,
-                    'description': a.description,
-                    'server_id': a.server_id,
-                    'tool_name': a.tool_name,
+                    "threat_type": a.threat_type.value,
+                    "severity": a.severity,
+                    "description": a.description,
+                    "server_id": a.server_id,
+                    "tool_name": a.tool_name,
                 }
                 for a in self.alerts[-10:]
-            ]
+            ],
         }
 
 

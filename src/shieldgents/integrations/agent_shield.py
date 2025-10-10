@@ -257,11 +257,7 @@ class AgentShield:
                     context={"tool": tool_name},
                 )
 
-        risk = (
-            risk_assessor(tool_name, {"args": args, "kwargs": kwargs})
-            if risk_assessor
-            else None
-        )
+        risk = risk_assessor(tool_name, {"args": args, "kwargs": kwargs}) if risk_assessor else None
         check = self.track_action(
             action_type=ActionType.TOOL_CALL,
             action_name=tool_name,
@@ -321,7 +317,9 @@ class AgentShield:
             def __init__(self, base: Any) -> None:
                 self._base = base
 
-            def invoke(self, input_data: Any, config: Optional[Dict[str, Any]] = None, **kwargs: Any) -> Any:
+            def invoke(
+                self, input_data: Any, config: Optional[Dict[str, Any]] = None, **kwargs: Any
+            ) -> Any:
                 prompt_text = shield._extract_prompt(input_data, input_key)
                 prompt = shield.guard_prompt(
                     prompt_text,
@@ -342,7 +340,9 @@ class AgentShield:
                     return output.sanitized_output
                 return result
 
-            async def ainvoke(self, input_data: Any, config: Optional[Dict[str, Any]] = None, **kwargs: Any) -> Any:
+            async def ainvoke(
+                self, input_data: Any, config: Optional[Dict[str, Any]] = None, **kwargs: Any
+            ) -> Any:
                 if not hasattr(self._base, "ainvoke"):
                     raise AttributeError("Wrapped runnable does not define 'ainvoke'")
 
