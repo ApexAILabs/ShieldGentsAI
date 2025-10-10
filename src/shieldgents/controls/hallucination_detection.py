@@ -291,9 +291,9 @@ class HallucinationDetector:
                                 "contradicting_facts": [f.statement for f in relevant_facts[:3]],
                             },
                             original_text=response,
-                            suggested_correction=relevant_facts[0].statement
-                            if relevant_facts
-                            else None,
+                            suggested_correction=(
+                                relevant_facts[0].statement if relevant_facts else None
+                            ),
                         )
                     )
 
