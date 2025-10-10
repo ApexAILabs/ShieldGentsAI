@@ -124,6 +124,43 @@ jobs:
   # Telegram notifications
   # ------------------------------
 
+  notify-telegram-pr-opened:
+    name: Notify Telegram (PR Opened)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Send Telegram message (PR opened)
+        continue-on-error: true
+        env:
+          TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          REPO: ${{ github.repository }}
+          ACTOR: ${{ github.actor }}
+          PR_NUM: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          HEAD_BRANCH: ${{ github.event.pull_request.head.ref }}
+          BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          API_URL="https://api.telegram.org/bot${TG_TOKEN}/sendMessage"
+          MSG="📋 <b>New Pull Request</b>
+          Repo: <code>${REPO}</code>
+          By: <b>${ACTOR}</b>
+          PR: <b>#${PR_NUM}</b> — ${PR_TITLE}
+          Branch: <code>${HEAD_BRANCH}</code> → <code>${BASE_BRANCH}</code>
+          Link: ${PR_URL}
+          Run: ${RUN_URL}"
+
+          HTTP_CODE=$(curl -sS -w "%{http_code}" -o /tmp/resp.json "$API_URL" \
+            -d "chat_id=${CHAT_ID}" \
+            -d "parse_mode=HTML" \
+            -d "disable_web_page_preview=true" \
+            --data-urlencode "text=${MSG}")
+          echo "Telegram response:"; cat /tmp/resp.json; echo; echo "HTTP ${HTTP_CODE}"
+          [ "$HTTP_CODE" = "200" ] || exit 1
+
   notify-telegram-tests-passed:
     name: Notify Telegram (Tests Passed)
     runs-on: ubuntu-latest
@@ -150,13 +187,10 @@ jobs:
             PR_NUM="${{ github.event.pull_request.number }}"
             PR_TITLE="${{ github.event.pull_request.title }}"
             PR_URL="${{ github.event.pull_request.html_url }}"
-            HEAD_BRANCH="${{ github.event.pull_request.head.ref }}"
-            BASE_BRANCH="${{ github.event.pull_request.base.ref }}"
-            MSG="✅ <b>New Pull Request - Tests Passed</b>
+            MSG="✅ <b>Tests Passed</b>
           Repo: <code>${REPO}</code>
           By: <b>${ACTOR}</b>
           PR: <b>#${PR_NUM}</b> — ${PR_TITLE}
-          Branch: <code>${HEAD_BRANCH}</code> → <code>${BASE_BRANCH}</code>
           Link: ${PR_URL}
           Run: ${RUN_URL}"
           else
