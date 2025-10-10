@@ -57,11 +57,13 @@ from shieldgents.controls.content_safety import (
     ContentSafetyAlert,
     MisuseType,
 )
-from shieldgents.controls.adversarial_detection import (
-    AdversarialInputDetector,
-    GradientAttackDetector,
-    AdversarialAlert,
-    AdversarialThreat,
+from shieldgents.controls.hallucination_detection import (
+    HallucinationDetector,
+    KnowledgeBase,
+    ConfidenceScorer,
+    HallucinationAlert,
+    HallucinationType,
+    FactEntry,
 )
 
 __all__ = [
@@ -113,9 +115,11 @@ __all__ = [
     "ContentSafetyFilter",
     "ContentSafetyAlert",
     "MisuseType",
-    # Adversarial detection
-    "AdversarialInputDetector",
-    "GradientAttackDetector",
-    "AdversarialAlert",
-    "AdversarialThreat",
+    # Hallucination detection
+    "HallucinationDetector",
+    "KnowledgeBase",
+    "ConfidenceScorer",
+    "HallucinationAlert",
+    "HallucinationType",
+    "FactEntry",
 ]

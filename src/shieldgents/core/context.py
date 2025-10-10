@@ -225,7 +225,13 @@ class ConversationMemory:
         self.summaries: List[str] = []
 
     def add_turn(self, user_input: str, assistant_response: str) -> None:
-        """Add a conversation turn."""
+        """
+        Add a conversation turn.
+
+        Args:
+            user_input: User's input message
+            assistant_response: Assistant's response message
+        """
         if not self.context_manager.has_capacity() and self.enable_summarization:
             self._summarize_and_compress()
 
@@ -233,7 +239,12 @@ class ConversationMemory:
         self.context_manager.add_message("assistant", assistant_response)
 
     def get_context_for_prompt(self) -> str:
-        """Get formatted context for LLM prompt."""
+        """
+        Get formatted context for LLM prompt.
+
+        Returns:
+            Formatted string containing conversation history and summaries
+        """
         parts = []
 
         # Add summaries
@@ -312,7 +323,15 @@ class RateLimiter:
         return True
 
     def get_remaining(self, key: str) -> int:
-        """Get remaining requests for key."""
+        """
+        Get remaining requests for key.
+
+        Args:
+            key: Rate limit key to check
+
+        Returns:
+            Number of remaining requests in current window
+        """
         import time
 
         now = time.time()
