@@ -160,7 +160,7 @@ is_anomaly = monitor.check_anomaly(
 data = monitor.get_dashboard_data()
 ```
 
-### 4. Access Control
+### 4. Access Control:
 
 ```python
 from shieldgents.controls import AccessControlList, ToolAccessControl, setup_default_roles
