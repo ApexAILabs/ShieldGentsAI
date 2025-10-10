@@ -1,6 +1,5 @@
 """Tests for model drift and integrity monitoring module."""
 
-import pytest
 from shieldgents.controls.model_drift import (
     ModelDriftDetector,
     ModelIntegrityMonitor,
@@ -86,7 +85,9 @@ class TestModelDriftDetector:
         alerts = detector.record_performance(current_metrics)
 
         # No degradation alerts for improved performance
-        degradation_alerts = [a for a in alerts if a.drift_type == DriftType.PERFORMANCE_DEGRADATION]
+        degradation_alerts = [
+            a for a in alerts if a.drift_type == DriftType.PERFORMANCE_DEGRADATION
+        ]
         assert len(degradation_alerts) == 0
 
     def test_psi_calculation(self):
@@ -163,11 +164,7 @@ class TestModelIntegrityMonitor:
 
         monitor.set_behavior_baseline("model-1", test_inputs, expected_outputs)
 
-        alert = monitor.check_behavior_consistency(
-            "model-1",
-            test_inputs,
-            expected_outputs
-        )
+        alert = monitor.check_behavior_consistency("model-1", test_inputs, expected_outputs)
 
         assert alert is None  # No alert means behavior is consistent
 
@@ -183,10 +180,7 @@ class TestModelIntegrityMonitor:
         # Different outputs
         current_outputs = ["different1", "different2", "different3"]
         alert = monitor.check_behavior_consistency(
-            "model-1",
-            test_inputs,
-            current_outputs,
-            tolerance=0.1
+            "model-1", test_inputs, current_outputs, tolerance=0.1
         )
 
         assert alert is not None
@@ -201,12 +195,7 @@ class TestModelVersionControl:
         """Test registering a model version."""
         vcs = ModelVersionControl()
 
-        vcs.register_version(
-            "model-1",
-            "v1.0.0",
-            "abc123fingerprint",
-            metadata={"accuracy": 0.95}
-        )
+        vcs.register_version("model-1", "v1.0.0", "abc123fingerprint", metadata={"accuracy": 0.95})
 
         assert "model-1" in vcs.versions
         assert len(vcs.versions["model-1"]) == 1

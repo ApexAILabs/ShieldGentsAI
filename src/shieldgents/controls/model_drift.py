@@ -8,15 +8,15 @@ Detects if models have been degraded, replaced, or manipulated at runtime.
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 import hashlib
-import json
 import math
 from collections import deque
 
 
 class DriftType(Enum):
     """Types of model drift."""
+
     CONCEPT_DRIFT = "concept_drift"
     DATA_DRIFT = "data_drift"
     PREDICTION_DRIFT = "prediction_drift"
@@ -26,6 +26,7 @@ class DriftType(Enum):
 
 class IntegrityThreat(Enum):
     """Types of integrity threats."""
+
     MODEL_TAMPERING = "model_tampering"
     MODEL_REPLACEMENT = "model_replacement"
     WEIGHTS_CORRUPTION = "weights_corruption"
@@ -35,6 +36,7 @@ class IntegrityThreat(Enum):
 @dataclass
 class DriftAlert:
     """Alert for detected model drift."""
+
     drift_type: DriftType
     severity: str  # "low", "medium", "high", "critical"
     confidence: float
@@ -48,6 +50,7 @@ class DriftAlert:
 @dataclass
 class IntegrityAlert:
     """Alert for integrity violations."""
+
     threat_type: IntegrityThreat
     severity: str
     description: str
@@ -72,7 +75,7 @@ class ModelDriftDetector:
         psi_threshold: float = 0.2,
         kl_threshold: float = 0.1,
         window_size: int = 1000,
-        baseline_window: int = 5000
+        baseline_window: int = 5000,
     ):
         self.psi_threshold = psi_threshold
         self.kl_threshold = kl_threshold
@@ -127,39 +130,41 @@ class ModelDriftDetector:
         # Check prediction drift using PSI
         if len(self.baseline_predictions) > 100 and len(self.current_predictions) > 100:
             psi = self._calculate_psi(
-                list(self.baseline_predictions),
-                list(self.current_predictions)
+                list(self.baseline_predictions), list(self.current_predictions)
             )
 
             if psi > self.psi_threshold:
                 severity = "critical" if psi > 0.5 else "high" if psi > 0.3 else "medium"
-                alerts.append(DriftAlert(
-                    drift_type=DriftType.PREDICTION_DRIFT,
-                    severity=severity,
-                    confidence=min(1.0, psi / 0.5),
-                    description=f"Prediction distribution drift detected (PSI: {psi:.4f})",
-                    metrics={"psi": psi, "threshold": self.psi_threshold},
-                    should_retrain=psi > 0.3,
-                    should_rollback=psi > 0.5
-                ))
+                alerts.append(
+                    DriftAlert(
+                        drift_type=DriftType.PREDICTION_DRIFT,
+                        severity=severity,
+                        confidence=min(1.0, psi / 0.5),
+                        description=f"Prediction distribution drift detected (PSI: {psi:.4f})",
+                        metrics={"psi": psi, "threshold": self.psi_threshold},
+                        should_retrain=psi > 0.3,
+                        should_rollback=psi > 0.5,
+                    )
+                )
 
         # Check data drift using KL divergence
         if len(self.baseline_predictions) > 100 and len(self.current_predictions) > 100:
             kl_div = self._calculate_kl_divergence(
-                list(self.baseline_predictions),
-                list(self.current_predictions)
+                list(self.baseline_predictions), list(self.current_predictions)
             )
 
             if kl_div > self.kl_threshold:
                 severity = "high" if kl_div > 0.5 else "medium"
-                alerts.append(DriftAlert(
-                    drift_type=DriftType.DATA_DRIFT,
-                    severity=severity,
-                    confidence=min(1.0, kl_div / 1.0),
-                    description=f"Data distribution drift detected (KL: {kl_div:.4f})",
-                    metrics={"kl_divergence": kl_div, "threshold": self.kl_threshold},
-                    should_retrain=kl_div > 0.5
-                ))
+                alerts.append(
+                    DriftAlert(
+                        drift_type=DriftType.DATA_DRIFT,
+                        severity=severity,
+                        confidence=min(1.0, kl_div / 1.0),
+                        description=f"Data distribution drift detected (KL: {kl_div:.4f})",
+                        metrics={"kl_divergence": kl_div, "threshold": self.kl_threshold},
+                        should_retrain=kl_div > 0.5,
+                    )
+                )
 
         return alerts
 
@@ -195,7 +200,9 @@ class ModelDriftDetector:
 
         return abs(psi)
 
-    def _calculate_kl_divergence(self, baseline: List[float], current: List[float], bins: int = 10) -> float:
+    def _calculate_kl_divergence(
+        self, baseline: List[float], current: List[float], bins: int = 10
+    ) -> float:
         """
         Calculate KL divergence between distributions.
 
@@ -221,7 +228,9 @@ class ModelDriftDetector:
 
         # Calculate KL divergence with smoothing
         epsilon = 1e-10
-        kl_div = sum(p_i * math.log((p_i + epsilon) / (q_i + epsilon)) for p_i, q_i in zip(p, q) if p_i > 0)
+        kl_div = sum(
+            p_i * math.log((p_i + epsilon) / (q_i + epsilon)) for p_i, q_i in zip(p, q) if p_i > 0
+        )
 
         return abs(kl_div)
 
@@ -267,24 +276,34 @@ class ModelDriftDetector:
 
                 # For accuracy-like metrics (higher is better)
                 if metric_name in ["accuracy", "precision", "recall", "f1"]:
-                    degradation = (baseline_value - current_value) / baseline_value if baseline_value > 0 else 0
+                    degradation = (
+                        (baseline_value - current_value) / baseline_value
+                        if baseline_value > 0
+                        else 0
+                    )
 
                     if degradation > 0.1:  # 10% degradation threshold
-                        severity = "critical" if degradation > 0.3 else "high" if degradation > 0.2 else "medium"
-                        alerts.append(DriftAlert(
-                            drift_type=DriftType.PERFORMANCE_DEGRADATION,
-                            severity=severity,
-                            confidence=min(1.0, degradation / 0.3),
-                            description=f"{metric_name} degraded by {degradation:.1%}",
-                            metrics={
-                                "metric": metric_name,
-                                "baseline": baseline_value,
-                                "current": current_value,
-                                "degradation": degradation
-                            },
-                            should_retrain=degradation > 0.2,
-                            should_rollback=degradation > 0.3
-                        ))
+                        severity = (
+                            "critical"
+                            if degradation > 0.3
+                            else "high" if degradation > 0.2 else "medium"
+                        )
+                        alerts.append(
+                            DriftAlert(
+                                drift_type=DriftType.PERFORMANCE_DEGRADATION,
+                                severity=severity,
+                                confidence=min(1.0, degradation / 0.3),
+                                description=f"{metric_name} degraded by {degradation:.1%}",
+                                metrics={
+                                    "metric": metric_name,
+                                    "baseline": baseline_value,
+                                    "current": current_value,
+                                    "degradation": degradation,
+                                },
+                                should_retrain=degradation > 0.2,
+                                should_rollback=degradation > 0.3,
+                            )
+                        )
 
         return alerts
 
@@ -335,7 +354,7 @@ class ModelIntegrityMonitor:
                 severity="high",
                 description=f"No baseline fingerprint found for model {model_id}",
                 evidence={"model_id": model_id},
-                should_block=False
+                should_block=False,
             )
 
         current_fingerprint = hashlib.sha256(model_data).hexdigest()
@@ -349,9 +368,9 @@ class ModelIntegrityMonitor:
                 evidence={
                     "model_id": model_id,
                     "expected": expected_fingerprint,
-                    "actual": current_fingerprint
+                    "actual": current_fingerprint,
                 },
-                should_block=True
+                should_block=True,
             )
 
         return None
@@ -372,7 +391,7 @@ class ModelIntegrityMonitor:
         model_id: str,
         test_inputs: List[str],
         current_outputs: List[str],
-        tolerance: float = 0.1
+        tolerance: float = 0.1,
     ) -> Optional[IntegrityAlert]:
         """
         Check if model behavior is consistent with baseline.
@@ -398,9 +417,9 @@ class ModelIntegrityMonitor:
                 description=f"Output count mismatch for model {model_id}",
                 evidence={
                     "expected_count": len(baseline_outputs),
-                    "actual_count": len(current_outputs)
+                    "actual_count": len(current_outputs),
                 },
-                should_block=True
+                should_block=True,
             )
 
         # Calculate similarity
@@ -417,9 +436,9 @@ class ModelIntegrityMonitor:
                     "similarity": similarity,
                     "tolerance": tolerance,
                     "matches": matches,
-                    "total": len(baseline_outputs)
+                    "total": len(baseline_outputs),
                 },
-                should_block=similarity < 0.7
+                should_block=similarity < 0.7,
             )
 
         return None
@@ -436,18 +455,20 @@ class ModelVersionControl:
         model_id: str,
         version: str,
         fingerprint: str,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: Optional[Dict[str, Any]] = None,
     ):
         """Register a new model version."""
         if model_id not in self.versions:
             self.versions[model_id] = []
 
-        self.versions[model_id].append({
-            "version": version,
-            "fingerprint": fingerprint,
-            "timestamp": datetime.now(),
-            "metadata": metadata or {}
-        })
+        self.versions[model_id].append(
+            {
+                "version": version,
+                "fingerprint": fingerprint,
+                "timestamp": datetime.now(),
+                "metadata": metadata or {},
+            }
+        )
 
     def get_latest_version(self, model_id: str) -> Optional[Dict[str, Any]]:
         """Get the latest version info for a model."""
