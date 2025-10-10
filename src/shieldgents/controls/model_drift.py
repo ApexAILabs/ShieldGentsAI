@@ -31,6 +31,7 @@ class IntegrityThreat(Enum):
     MODEL_REPLACEMENT = "model_replacement"
     WEIGHTS_CORRUPTION = "weights_corruption"
     FINGERPRINT_MISMATCH = "fingerprint_mismatch"
+    BEHAVIORAL_CHANGE = "behavioral_change"
 
 
 @dataclass
