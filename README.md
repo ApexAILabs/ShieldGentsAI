@@ -1,11 +1,11 @@
 <div align="center">
                                     
 ```
-                                       _____ __    _      __    ________            __
-                                      / ___// /_  (_)__  / /___/ / ____/__  ____  / /______
-                                      \__ \/ __ \/ / _ \/ / __  / / __/ _ \/ __ \/ __/ ___/
-                                     ___/ / / / / /  __/ / /_/ / /_/ /  __/ / / / /_(__  )
-                                    /____/_/ /_/_/\___/_/\__,_/\____/\___/_/ /_/\__/____/
+                                _____ __    _      __    ________            __
+                                / ___// /_  (_)__  / /___/ / ____/__  ____  / /______
+                                \__ \/ __ \/ / _ \/ / __  / / __/ _ \/ __ \/ __/ ___/
+                                ___/ / / / / /  __/ / /_/ / /_/ /  __/ / / / /_(__  )
+                            /____/_/ /_/_/\___/_/\__,_/\____/\___/_/ /_/\__/____/
 ```
 
 <div align="center">
@@ -83,7 +83,7 @@ uv sync
 
 ---
 
-## 🎯 Quick Start
+## 🎯 Quick Start:
 
 ### 1. Prompt Injection Protection
 
@@ -160,7 +160,7 @@ is_anomaly = monitor.check_anomaly(
 data = monitor.get_dashboard_data()
 ```
 
-### 4. Access Control
+### 4. Access Control:
 
 ```python
 from shieldgents.controls import AccessControlList, ToolAccessControl, setup_default_roles

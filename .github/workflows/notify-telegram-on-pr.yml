@@ -3,11 +3,13 @@ name: Notify Telegram on PR
 on:
   pull_request:
     types: [opened, reopened, ready_for_review]
-    branches: [ main, master ]  # adjust if needed
 
 jobs:
   notify:
     runs-on: ubuntu-latest
+    # Skip if secrets are missing (e.g., forked PRs)
+    if: ${{ secrets.TELEGRAM_BOT_TOKEN != '' && secrets.TELEGRAM_CHAT_ID != '' }}
+
     steps:
       - name: Send Telegram message
         env:
@@ -21,16 +23,31 @@ jobs:
           BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
           HEAD_BRANCH: ${{ github.event.pull_request.head.ref }}
         run: |
-          # Build a simple HTML-formatted message (safe for Telegram)
-          MSG="<b>New Pull Request</b>%0A\
-          Repo: <code>${REPO}</code>%0A\
-          By: <b>${ACTOR}</b>%0A\
-          PR: <b>#${PR_NUM}</b> — ${PR_TITLE}%0A\
-          Branch: <code>${HEAD_BRANCH}</code> → <code>${BASE_BRANCH}</code>%0A\
-          Link: ${PR_URL}"
+          set -euo pipefail
 
-          curl -sS "https://api.telegram.org/bot${TG_TOKEN}/sendMessage" \
-            -d chat_id="${CHAT_ID}" \
-            -d text="${MSG}" \
-            -d parse_mode="HTML" \
-            -d disable_web_page_preview=true
+          API_URL="https://api.telegram.org/bot${TG_TOKEN}/sendMessage"
+
+          MSG="\<b\>New Pull Request\</b\>
+Repo: \<code\>${REPO}\</code\>
+By: \<b\>${ACTOR}\</b\>
+PR: \<b\>#${PR_NUM}\</b\> — ${PR_TITLE}
+Branch: \<code\>${HEAD_BRANCH}\</code\> → \<code\>${BASE_BRANCH}\</code\>
+Link: ${PR_URL}"
+
+          # Show short debug (lengths only; won’t leak secrets)
+          echo "Token length: ${#TG_TOKEN}, Chat ID: ${CHAT_ID}"
+
+          # Send and capture HTTP code + body
+          HTTP_CODE=$(curl -sS -w "%{http_code}" -o /tmp/resp.json "$API_URL" \
+            -d "chat_id=${CHAT_ID}" \
+            -d "parse_mode=HTML" \
+            -d "disable_web_page_preview=true" \
+            --data-urlencode "text=${MSG}")
+
+          echo "Telegram response:"
+          cat /tmp/resp.json
+          echo
+          echo "HTTP ${HTTP_CODE}"
+
+          # Fail if Telegram didn’t return 200
+          [ "$HTTP_CODE" = "200" ] || exit 1
