@@ -1,6 +1,5 @@
 """Tests for hallucination detection module."""
 
-import pytest
 from shieldgents.controls.hallucination_detection import (
     HallucinationDetector,
     KnowledgeBase,
@@ -17,9 +16,7 @@ class TestKnowledgeBase:
         kb = KnowledgeBase()
 
         fact_id = kb.add_fact(
-            statement="Python is a programming language",
-            source="Wikipedia",
-            confidence=0.95
+            statement="Python is a programming language", source="Wikipedia", confidence=0.95
         )
 
         assert fact_id in kb.facts
@@ -59,8 +56,7 @@ class TestHallucinationDetector:
         detector = HallucinationDetector(min_confidence_threshold=0.5)
 
         alerts = detector.check_response(
-            response="I think maybe possibly this is correct",
-            confidence_score=0.3
+            response="I think maybe possibly this is correct", confidence_score=0.3
         )
 
         assert len(alerts) > 0
@@ -75,12 +71,13 @@ class TestHallucinationDetector:
 
         # Claim not in knowledge base
         alerts = detector.check_response(
-            response="Tokyo is the capital of China.",
-            query="What is the capital of China?"
+            response="Tokyo is the capital of China.", query="What is the capital of China?"
         )
 
         assert len(alerts) > 0
-        assert any(alert.hallucination_type == HallucinationType.UNSUPPORTED_CLAIM for alert in alerts)
+        assert any(
+            alert.hallucination_type == HallucinationType.UNSUPPORTED_CLAIM for alert in alerts
+        )
 
     def test_no_hallucination_supported_claim(self):
         """Test that supported claims don't trigger alerts."""
@@ -92,7 +89,7 @@ class TestHallucinationDetector:
         alerts = detector.check_response(
             response="Paris is the capital of France.",
             query="What is the capital of France?",
-            confidence_score=0.9
+            confidence_score=0.9,
         )
 
         # Should have minimal alerts for supported facts
@@ -104,15 +101,11 @@ class TestHallucinationDetector:
         detector = HallucinationDetector(enable_consistency_check=True)
 
         # First response
-        detector.check_response(
-            response="The answer is A",
-            query="What is the answer?"
-        )
+        detector.check_response(response="The answer is A", query="What is the answer?")
 
         # Contradictory response to similar query
         alerts = detector.check_response(
-            response="The answer is definitely B, not A",
-            query="What is the correct answer?"
+            response="The answer is definitely B, not A", query="What is the correct answer?"
         )
 
         # May or may not trigger depending on similarity threshold
@@ -128,11 +121,13 @@ class TestHallucinationDetector:
         # Response with fabricated citation
         alerts = detector.check_response(
             response="According to [Smith et al. 2020], this is true.",
-            claimed_sources=claimed_sources
+            claimed_sources=claimed_sources,
         )
 
         assert len(alerts) > 0
-        assert any(alert.hallucination_type == HallucinationType.FABRICATED_SOURCE for alert in alerts)
+        assert any(
+            alert.hallucination_type == HallucinationType.FABRICATED_SOURCE for alert in alerts
+        )
 
     def test_claim_extraction(self):
         """Test extraction of claims from text."""

@@ -14,8 +14,6 @@ from urllib.parse import urlparse
 
 from shieldgents.core.prompts import (
     PromptGuard,
-    PromptInjectionDetector,
-    ScanResult,
     ThreatLevel,
 )
 
@@ -109,9 +107,7 @@ class WebContentDetector:
 
         self.strict_mode = strict_mode
 
-    def scan_content(
-        self, content: str, source_url: Optional[str] = None
-    ) -> ContentScanResult:
+    def scan_content(self, content: str, source_url: Optional[str] = None) -> ContentScanResult:
         """
         Scan web content for malicious patterns.
 
@@ -230,9 +226,7 @@ class ExternalContentSanitizer:
 
         # Remove URLs
         if self.strip_urls:
-            sanitized = re.sub(
-                r"https?://[^\s<>\"']+|www\.[^\s<>\"']+", "[URL_REMOVED]", sanitized
-            )
+            sanitized = re.sub(r"https?://[^\s<>\"']+|www\.[^\s<>\"']+", "[URL_REMOVED]", sanitized)
 
         # Remove encoded characters
         sanitized = self._decode_entities(sanitized)

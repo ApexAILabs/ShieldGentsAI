@@ -12,13 +12,14 @@ Detects and mitigates hallucinations in AI agent outputs including:
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Dict, List, Optional, Set, Callable
+from typing import Any, Dict, List, Optional, Set
 import re
 import hashlib
 
 
 class HallucinationType(Enum):
     """Types of hallucinations."""
+
     FACTUAL_ERROR = "factual_error"
     INCONSISTENCY = "inconsistency"
     UNSUPPORTED_CLAIM = "unsupported_claim"
@@ -31,6 +32,7 @@ class HallucinationType(Enum):
 @dataclass
 class HallucinationAlert:
     """Alert for detected hallucination."""
+
     hallucination_type: HallucinationType
     severity: str  # "low", "medium", "high", "critical"
     confidence: float  # How confident we are in the detection
@@ -44,6 +46,7 @@ class HallucinationAlert:
 @dataclass
 class FactEntry:
     """A fact in the knowledge base."""
+
     fact_id: str
     statement: str
     source: str
@@ -55,6 +58,7 @@ class FactEntry:
 @dataclass
 class ResponseHistory:
     """Historical response for consistency checking."""
+
     query: str
     response: str
     timestamp: datetime
@@ -76,7 +80,7 @@ class KnowledgeBase:
         statement: str,
         source: str,
         confidence: float = 1.0,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> str:
         """
         Add a fact to the knowledge base.
@@ -97,7 +101,7 @@ class KnowledgeBase:
             statement=statement,
             source=source,
             confidence=confidence,
-            metadata=metadata or {}
+            metadata=metadata or {},
         )
 
         self.facts[fact_id] = fact
@@ -139,11 +143,30 @@ class KnowledgeBase:
     def _extract_keywords(self, text: str) -> Set[str]:
         """Extract keywords from text (simplified)."""
         # Remove punctuation and convert to lowercase
-        text = re.sub(r'[^\w\s]', ' ', text.lower())
+        text = re.sub(r"[^\w\s]", " ", text.lower())
         words = text.split()
 
         # Filter out common stop words (simplified)
-        stop_words = {'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'is', 'are', 'was', 'were'}
+        stop_words = {
+            "the",
+            "a",
+            "an",
+            "and",
+            "or",
+            "but",
+            "in",
+            "on",
+            "at",
+            "to",
+            "for",
+            "of",
+            "with",
+            "by",
+            "is",
+            "are",
+            "was",
+            "were",
+        }
         keywords = {w for w in words if w not in stop_words and len(w) > 2}
 
         return keywords
@@ -165,7 +188,7 @@ class HallucinationDetector:
         knowledge_base: Optional[KnowledgeBase] = None,
         min_confidence_threshold: float = 0.3,
         enable_consistency_check: bool = True,
-        enable_citation_check: bool = True
+        enable_citation_check: bool = True,
     ):
         self.knowledge_base = knowledge_base or KnowledgeBase()
         self.min_confidence_threshold = min_confidence_threshold
@@ -180,7 +203,7 @@ class HallucinationDetector:
         response: str,
         query: Optional[str] = None,
         claimed_sources: Optional[List[str]] = None,
-        confidence_score: Optional[float] = None
+        confidence_score: Optional[float] = None,
     ) -> List[HallucinationAlert]:
         """
         Check a response for hallucinations.
@@ -198,14 +221,16 @@ class HallucinationDetector:
 
         # Check confidence score
         if confidence_score is not None and confidence_score < self.min_confidence_threshold:
-            alerts.append(HallucinationAlert(
-                hallucination_type=HallucinationType.LOW_CONFIDENCE,
-                severity="medium",
-                confidence=1.0 - confidence_score,
-                description=f"Low model confidence: {confidence_score:.2%}",
-                evidence={"confidence_score": confidence_score},
-                original_text=response
-            ))
+            alerts.append(
+                HallucinationAlert(
+                    hallucination_type=HallucinationType.LOW_CONFIDENCE,
+                    severity="medium",
+                    confidence=1.0 - confidence_score,
+                    description=f"Low model confidence: {confidence_score:.2%}",
+                    evidence={"confidence_score": confidence_score},
+                    original_text=response,
+                )
+            )
 
         # Check for unsupported claims
         fact_check_alerts = self._check_facts(response)
@@ -240,31 +265,37 @@ class HallucinationDetector:
 
             if not relevant_facts:
                 # No supporting facts found
-                alerts.append(HallucinationAlert(
-                    hallucination_type=HallucinationType.UNSUPPORTED_CLAIM,
-                    severity="medium",
-                    confidence=0.6,
-                    description=f"Claim not found in knowledge base: {claim[:100]}",
-                    evidence={"claim": claim},
-                    original_text=response
-                ))
+                alerts.append(
+                    HallucinationAlert(
+                        hallucination_type=HallucinationType.UNSUPPORTED_CLAIM,
+                        severity="medium",
+                        confidence=0.6,
+                        description=f"Claim not found in knowledge base: {claim[:100]}",
+                        evidence={"claim": claim},
+                        original_text=response,
+                    )
+                )
             else:
                 # Check if facts contradict the claim
                 contradiction_score = self._check_contradiction(claim, relevant_facts)
 
                 if contradiction_score > 0.7:
-                    alerts.append(HallucinationAlert(
-                        hallucination_type=HallucinationType.FACTUAL_ERROR,
-                        severity="high",
-                        confidence=contradiction_score,
-                        description=f"Claim contradicts known facts: {claim[:100]}",
-                        evidence={
-                            "claim": claim,
-                            "contradicting_facts": [f.statement for f in relevant_facts[:3]]
-                        },
-                        original_text=response,
-                        suggested_correction=relevant_facts[0].statement if relevant_facts else None
-                    ))
+                    alerts.append(
+                        HallucinationAlert(
+                            hallucination_type=HallucinationType.FACTUAL_ERROR,
+                            severity="high",
+                            confidence=contradiction_score,
+                            description=f"Claim contradicts known facts: {claim[:100]}",
+                            evidence={
+                                "claim": claim,
+                                "contradicting_facts": [f.statement for f in relevant_facts[:3]],
+                            },
+                            original_text=response,
+                            suggested_correction=relevant_facts[0].statement
+                            if relevant_facts
+                            else None,
+                        )
+                    )
 
         return alerts
 
@@ -281,22 +312,26 @@ class HallucinationDetector:
 
             # If queries are similar but responses are very different, flag inconsistency
             if similarity < 0.3:  # Low similarity threshold
-                alerts.append(HallucinationAlert(
-                    hallucination_type=HallucinationType.INCONSISTENCY,
-                    severity="medium",
-                    confidence=1.0 - similarity,
-                    description="Response inconsistent with previous similar query",
-                    evidence={
-                        "previous_query": prev.query,
-                        "previous_response": prev.response[:200],
-                        "similarity_score": similarity
-                    },
-                    original_text=response
-                ))
+                alerts.append(
+                    HallucinationAlert(
+                        hallucination_type=HallucinationType.INCONSISTENCY,
+                        severity="medium",
+                        confidence=1.0 - similarity,
+                        description="Response inconsistent with previous similar query",
+                        evidence={
+                            "previous_query": prev.query,
+                            "previous_response": prev.response[:200],
+                            "similarity_score": similarity,
+                        },
+                        original_text=response,
+                    )
+                )
 
         return alerts
 
-    def _check_citations(self, response: str, claimed_sources: List[str]) -> List[HallucinationAlert]:
+    def _check_citations(
+        self, response: str, claimed_sources: List[str]
+    ) -> List[HallucinationAlert]:
         """Check if cited sources are valid."""
         alerts = []
 
@@ -306,27 +341,29 @@ class HallucinationDetector:
         for citation in citations:
             # Check if citation is in claimed sources
             if not any(source in citation or citation in source for source in claimed_sources):
-                alerts.append(HallucinationAlert(
-                    hallucination_type=HallucinationType.FABRICATED_SOURCE,
-                    severity="high",
-                    confidence=0.8,
-                    description=f"Citation not in provided sources: {citation}",
-                    evidence={"citation": citation, "claimed_sources": claimed_sources},
-                    original_text=response
-                ))
+                alerts.append(
+                    HallucinationAlert(
+                        hallucination_type=HallucinationType.FABRICATED_SOURCE,
+                        severity="high",
+                        confidence=0.8,
+                        description=f"Citation not in provided sources: {citation}",
+                        evidence={"citation": citation, "claimed_sources": claimed_sources},
+                        original_text=response,
+                    )
+                )
 
         return alerts
 
     def _extract_claims(self, text: str) -> List[str]:
         """Extract declarative claims from text."""
         # Split into sentences
-        sentences = re.split(r'[.!?]+', text)
+        sentences = re.split(r"[.!?]+", text)
 
         # Filter for declarative sentences (simplified)
         claims = []
         for sentence in sentences:
             sentence = sentence.strip()
-            if len(sentence) > 10 and not sentence.endswith('?'):
+            if len(sentence) > 10 and not sentence.endswith("?"):
                 claims.append(sentence)
 
         return claims
@@ -335,8 +372,8 @@ class HallucinationDetector:
         """Extract citations from text."""
         # Look for patterns like [1], (Source, 2020), etc.
         patterns = [
-            r'\[([^\]]+)\]',  # [citation]
-            r'\(([^)]+\d{4}[^)]*)\)',  # (Author, 2020)
+            r"\[([^\]]+)\]",  # [citation]
+            r"\(([^)]+\d{4}[^)]*)\)",  # (Author, 2020)
         ]
 
         citations = []
@@ -352,7 +389,23 @@ class HallucinationDetector:
         Returns contradiction score (0.0 = no contradiction, 1.0 = clear contradiction).
         """
         # Simplified: check for negation words in combination with similar content
-        negation_words = {'not', 'no', 'never', 'none', 'nothing', 'neither', 'nor', 'cannot', "don't", "doesn't", "didn't", "isn't", "aren't", "wasn't", "weren't"}
+        negation_words = {
+            "not",
+            "no",
+            "never",
+            "none",
+            "nothing",
+            "neither",
+            "nor",
+            "cannot",
+            "don't",
+            "doesn't",
+            "didn't",
+            "isn't",
+            "aren't",
+            "wasn't",
+            "weren't",
+        }
 
         claim_lower = claim.lower()
         claim_has_negation = any(word in claim_lower.split() for word in negation_words)
@@ -402,15 +455,13 @@ class HallucinationDetector:
 
     def _add_to_history(self, query: str, response: str):
         """Add response to history."""
-        self.response_history.append(ResponseHistory(
-            query=query,
-            response=response,
-            timestamp=datetime.now()
-        ))
+        self.response_history.append(
+            ResponseHistory(query=query, response=response, timestamp=datetime.now())
+        )
 
         # Trim history
         if len(self.response_history) > self.max_history:
-            self.response_history = self.response_history[-self.max_history:]
+            self.response_history = self.response_history[-self.max_history :]
 
 
 class ConfidenceScorer:
@@ -426,15 +477,42 @@ class ConfidenceScorer:
     def __init__(self):
         # Words indicating uncertainty
         self.uncertainty_words = {
-            'maybe', 'perhaps', 'possibly', 'probably', 'likely', 'might', 'may',
-            'could', 'seem', 'appears', 'suggest', 'indicate', 'unclear', 'unsure',
-            'uncertain', 'approximately', 'roughly', 'about', 'around', 'estimate'
+            "maybe",
+            "perhaps",
+            "possibly",
+            "probably",
+            "likely",
+            "might",
+            "may",
+            "could",
+            "seem",
+            "appears",
+            "suggest",
+            "indicate",
+            "unclear",
+            "unsure",
+            "uncertain",
+            "approximately",
+            "roughly",
+            "about",
+            "around",
+            "estimate",
         }
 
         # Words indicating certainty
         self.certainty_words = {
-            'definitely', 'certainly', 'absolutely', 'clearly', 'obviously',
-            'undoubtedly', 'surely', 'always', 'never', 'must', 'will', 'guaranteed'
+            "definitely",
+            "certainly",
+            "absolutely",
+            "clearly",
+            "obviously",
+            "undoubtedly",
+            "surely",
+            "always",
+            "never",
+            "must",
+            "will",
+            "guaranteed",
         }
 
     def score_confidence(self, text: str) -> Dict[str, Any]:
@@ -475,5 +553,5 @@ class ConfidenceScorer:
             "certainty_indicators": certainty_count,
             "uncertainty_ratio": uncertainty_ratio,
             "certainty_ratio": certainty_ratio,
-            "word_count": total_words
+            "word_count": total_words,
         }

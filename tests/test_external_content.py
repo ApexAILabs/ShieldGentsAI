@@ -297,7 +297,10 @@ class TestIntegration:
 
         assert not result.is_safe
         assert "phishing_indicators" in result.detected_threats
-        assert "suspicious_domain" in result.detected_threats or "data_exfiltration" in result.detected_threats
+        assert (
+            "suspicious_domain" in result.detected_threats
+            or "data_exfiltration" in result.detected_threats
+        )
 
     def test_real_world_xss_attempt(self):
         """Test with realistic XSS attempt in blog comment."""

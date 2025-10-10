@@ -343,17 +343,13 @@ class AgentShield:
         Raises:
             SecurityViolation: If content is unsafe and blocking is enabled
         """
-        block_decision = (
-            self.block_on_external_content_threat if block is None else block
-        )
+        block_decision = self.block_on_external_content_threat if block is None else block
 
         # Convert content to string if needed
         content_str = content if isinstance(content, str) else str(content)
 
         # Scan external content
-        scan = self.external_content_guard.guard_scraped_content(
-            content_str, source_url
-        )
+        scan = self.external_content_guard.guard_scraped_content(content_str, source_url)
 
         if not scan.is_safe:
             event_metadata = {

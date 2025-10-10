@@ -10,7 +10,6 @@ from shieldgents.controls.external_content import (
     WebContentDetector,
     ExternalContentSanitizer,
 )
-from shieldgents.core.behavior import BehaviorPolicy, ActionType, RiskLevel
 
 
 def simulate_web_scraper(url: str) -> str:
@@ -81,7 +80,9 @@ def demo_basic_content_guarding():
     # Test 2: Malicious content
     print("\n[Test 2] Scanning malicious content...")
     malicious_content = simulate_web_scraper("https://malicious-site.com/tutorial")
-    result = guard.guard_scraped_content(malicious_content, source_url="https://malicious-site.com/tutorial")
+    result = guard.guard_scraped_content(
+        malicious_content, source_url="https://malicious-site.com/tutorial"
+    )
 
     print(f"  Is Safe: {result.is_safe}")
     print(f"  Threat Level: {result.threat_level.value}")
@@ -91,7 +92,9 @@ def demo_basic_content_guarding():
     # Test 3: Phishing content
     print("\n[Test 3] Scanning phishing content...")
     phishing_content = simulate_web_scraper("https://phishing-site.com/verify")
-    result = guard.guard_scraped_content(phishing_content, source_url="https://phishing-site.com/verify")
+    result = guard.guard_scraped_content(
+        phishing_content, source_url="https://phishing-site.com/verify"
+    )
 
     print(f"  Is Safe: {result.is_safe}")
     print(f"  Threat Level: {result.threat_level.value}")
@@ -118,7 +121,7 @@ def demo_agent_shield_integration():
             args=("https://safe-blog.com/article",),
             agent_id="scraper-agent-001",
         )
-        print(f"  ✓ Content retrieved and sanitized successfully")
+        print("  ✓ Content retrieved and sanitized successfully")
         print(f"  Content preview: {result[:100]}...")
     except Exception as e:
         print(f"  ✗ Error: {e}")
@@ -153,7 +156,7 @@ def demo_wrapper_pattern():
     print("\n[Test 1] Wrapped scraper with safe content...")
     try:
         result = safe_scraper(url="https://safe-blog.com/article")
-        print(f"  ✓ Content retrieved successfully")
+        print("  ✓ Content retrieved successfully")
         print(f"  Content preview: {result[:100]}...")
     except Exception as e:
         print(f"  ✗ Error: {e}")
@@ -162,7 +165,7 @@ def demo_wrapper_pattern():
     print("\n[Test 2] Wrapped scraper with malicious content (auto-sanitize)...")
     try:
         result = safe_scraper(url="https://malicious-site.com/tutorial")
-        print(f"  ✓ Content retrieved and auto-sanitized")
+        print("  ✓ Content retrieved and auto-sanitized")
         print(f"  Sanitized preview: {result[:100]}...")
         print(f"  Contains <script>: {'<script>' in result}")
     except Exception as e:
@@ -267,9 +270,9 @@ def demo_monitoring_and_logging():
     # Get security report
     print("\n[Security Report]")
     metrics = monitor.metrics.get_metrics()
-    event_count = metrics.get('counters', {}).get('events', 0)
+    event_count = metrics.get("counters", {}).get("events", 0)
     print(f"  Total Events Logged: {event_count}")
-    print(f"  Monitor is tracking security events in real-time")
+    print("  Monitor is tracking security events in real-time")
 
 
 def main():
