@@ -49,11 +49,12 @@ def main() -> None:
         print("Opening at: http://localhost:8501")
         print()
         import subprocess
+
         subprocess.run(["streamlit", "run", "-m", "shieldgents.interface.dashboard"])
 
     elif command == "test":
         print("🔴 Running Red Team Security Tests...")
-        from shieldgents.redteam.vectors import RedTeamTester, AttackVectorLibrary
+        from shieldgents.redteam.vectors import RedTeamTester
 
         def mock_agent(prompt: str) -> str:
             return f"Response to: {prompt}"
@@ -68,9 +69,9 @@ def main() -> None:
         print(f"Failed: {report['failed']}")
         print()
 
-        if report['failed_tests']:
+        if report["failed_tests"]:
             print("Failed Tests:")
-            for test in report['failed_tests'][:5]:
+            for test in report["failed_tests"][:5]:
                 print(f"  ❌ {test['name']} ({test['severity']})")
 
     elif command == "scan":
@@ -84,7 +85,7 @@ def main() -> None:
         print()
 
         try:
-            with open(file_path, 'r') as f:
+            with open(file_path, "r") as f:
                 content = f.read()
 
             from shieldgents.core.prompts import PromptGuard

@@ -8,12 +8,11 @@ and monitors for compromised packages or malicious libraries.
 from typing import Dict, List, Optional, Any, Set
 from dataclasses import dataclass, field
 from enum import Enum
-import hashlib
-import json
 
 
 class ThreatType(Enum):
     """Supply chain threat types."""
+
     MALICIOUS_PACKAGE = "malicious_package"
     VULNERABLE_DEPENDENCY = "vulnerable_dependency"
     UNSIGNED_CODE = "unsigned_code"
@@ -24,6 +23,7 @@ class ThreatType(Enum):
 @dataclass
 class SupplyChainAlert:
     """Alert for supply chain threat."""
+
     severity: str
     threat_type: ThreatType
     description: str
@@ -50,13 +50,20 @@ class SupplyChainValidator:
             require_signatures: Whether to require code signatures
         """
         self.known_malicious = known_malicious or set()
-        self.trusted_sources = trusted_sources or {'pypi.org', 'npmjs.com'}
+        self.trusted_sources = trusted_sources or {"pypi.org", "npmjs.com"}
         self.require_signatures = require_signatures
 
         # Common typosquatting targets
         self.typosquat_targets = {
-            'requests', 'numpy', 'pandas', 'django', 'flask',
-            'tensorflow', 'pytorch', 'openai', 'anthropic'
+            "requests",
+            "numpy",
+            "pandas",
+            "django",
+            "flask",
+            "tensorflow",
+            "pytorch",
+            "openai",
+            "anthropic",
         }
 
     def validate_package(
@@ -82,25 +89,29 @@ class SupplyChainValidator:
 
         # Check against known malicious
         if package_name.lower() in self.known_malicious:
-            alerts.append(SupplyChainAlert(
-                severity="critical",
-                threat_type=ThreatType.MALICIOUS_PACKAGE,
-                description=f"Known malicious package: {package_name}",
-                package_name=package_name,
-                should_block=True,
-                metadata={'version': version}
-            ))
+            alerts.append(
+                SupplyChainAlert(
+                    severity="critical",
+                    threat_type=ThreatType.MALICIOUS_PACKAGE,
+                    description=f"Known malicious package: {package_name}",
+                    package_name=package_name,
+                    should_block=True,
+                    metadata={"version": version},
+                )
+            )
 
         # Check source
         if source and source not in self.trusted_sources:
-            alerts.append(SupplyChainAlert(
-                severity="high",
-                threat_type=ThreatType.TAMPERED_PACKAGE,
-                description=f"Package from untrusted source: {source}",
-                package_name=package_name,
-                should_block=False,
-                metadata={'source': source}
-            ))
+            alerts.append(
+                SupplyChainAlert(
+                    severity="high",
+                    threat_type=ThreatType.TAMPERED_PACKAGE,
+                    description=f"Package from untrusted source: {source}",
+                    package_name=package_name,
+                    should_block=False,
+                    metadata={"source": source},
+                )
+            )
 
         # Check for typosquatting
         typo_alert = self._check_typosquatting(package_name)
@@ -129,7 +140,7 @@ class SupplyChainValidator:
                     description=f"Potential typosquatting: '{package_name}' similar to '{target}'",
                     package_name=package_name,
                     should_block=True,
-                    metadata={'target': target}
+                    metadata={"target": target},
                 )
 
         return None

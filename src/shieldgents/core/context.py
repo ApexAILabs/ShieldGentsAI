@@ -1,13 +1,14 @@
 """Context window management and PII detection for agentic AI systems."""
 
 import re
-from typing import List, Dict, Any, Optional, Set
+from typing import List, Dict, Any, Optional
 from dataclasses import dataclass, field
 from enum import Enum
 
 
 class PIIType(Enum):
     """Types of personally identifiable information."""
+
     EMAIL = "email"
     PHONE = "phone"
     SSN = "ssn"
@@ -22,6 +23,7 @@ class PIIType(Enum):
 @dataclass
 class PIIMatch:
     """Detected PII match."""
+
     pii_type: PIIType
     value: str
     start: int
@@ -32,6 +34,7 @@ class PIIMatch:
 @dataclass
 class PIIScanResult:
     """Result of PII scanning."""
+
     has_pii: bool
     matches: List[PIIMatch] = field(default_factory=list)
     redacted_text: Optional[str] = None
@@ -309,9 +312,7 @@ class RateLimiter:
             self.requests[key] = []
 
         # Remove old requests
-        self.requests[key] = [
-            t for t in self.requests[key] if now - t < self.window_seconds
-        ]
+        self.requests[key] = [t for t in self.requests[key] if now - t < self.window_seconds]
 
         # Check limit
         if len(self.requests[key]) >= self.max_requests:
@@ -339,8 +340,6 @@ class RateLimiter:
             return self.max_requests
 
         # Clean old requests
-        self.requests[key] = [
-            t for t in self.requests[key] if now - t < self.window_seconds
-        ]
+        self.requests[key] = [t for t in self.requests[key] if now - t < self.window_seconds]
 
         return max(0, self.max_requests - len(self.requests[key]))

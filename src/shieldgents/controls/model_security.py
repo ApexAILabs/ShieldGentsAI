@@ -14,6 +14,7 @@ import hashlib
 
 class AttackType(Enum):
     """Types of model attacks."""
+
     MODEL_INVERSION = "model_inversion"
     MODEL_STEALING = "model_stealing"
     MEMBERSHIP_INFERENCE = "membership_inference"
@@ -23,6 +24,7 @@ class AttackType(Enum):
 @dataclass
 class ModelSecurityAlert:
     """Alert for model security threat."""
+
     severity: str  # "low", "medium", "high", "critical"
     attack_type: AttackType
     description: str
@@ -84,7 +86,7 @@ class ModelInversionDetector:
             Alert if attack detected
         """
         now = time.time()
-        query_hash = self._hash_query(query)
+        _ = self._hash_query(query)  # Hash for potential future use
 
         # Clean old queries
         self._clean_old_queries(user_id, now)
@@ -112,9 +114,9 @@ class ModelInversionDetector:
                 should_block=True,
                 user_id=user_id,
                 metadata={
-                    'similar_queries': similar_count,
-                    'time_window': self.time_window_seconds,
-                }
+                    "similar_queries": similar_count,
+                    "time_window": self.time_window_seconds,
+                },
             )
 
         # Heuristic-based extraction detection (smart without ML)
@@ -131,9 +133,9 @@ class ModelInversionDetector:
                 should_block=extraction_risk > 0.6,
                 user_id=user_id,
                 metadata={
-                    'risk_score': extraction_risk,
-                    'probe_count': self.probe_patterns[user_id]
-                }
+                    "risk_score": extraction_risk,
+                    "probe_count": self.probe_patterns[user_id],
+                },
             )
 
         return None
@@ -158,10 +160,7 @@ class ModelInversionDetector:
     def _clean_old_queries(self, user_id: str, current_time: float) -> None:
         """Remove queries outside time window."""
         cutoff = current_time - self.time_window_seconds
-        self.user_queries[user_id] = [
-            (q, t) for q, t in self.user_queries[user_id]
-            if t > cutoff
-        ]
+        self.user_queries[user_id] = [(q, t) for q, t in self.user_queries[user_id] if t > cutoff]
 
     def _calculate_extraction_risk(self, query: str) -> float:
         """Calculate extraction risk score using heuristics (0.0-1.0)."""
@@ -169,27 +168,27 @@ class ModelInversionDetector:
         query_lower = query.lower()
 
         # Signal 1: Memory/recall verbs (0.3)
-        memory_verbs = ['remember', 'recall', 'retrieve', 'memorize', 'know', 'knew']
+        memory_verbs = ["remember", "recall", "retrieve", "memorize", "know", "knew"]
         if any(verb in query_lower for verb in memory_verbs):
             score += 0.3
 
         # Signal 2: Personal/sensitive data references (0.3)
-        sensitive_terms = ['personal', 'private', 'user', 'confidential', 'sensitive', 'individual']
+        sensitive_terms = ["personal", "private", "user", "confidential", "sensitive", "individual"]
         if any(term in query_lower for term in sensitive_terms):
             score += 0.3
 
         # Signal 3: Information extraction verbs (0.2)
-        extraction_verbs = ['tell', 'show', 'reveal', 'disclose', 'share', 'give', 'provide']
+        extraction_verbs = ["tell", "show", "reveal", "disclose", "share", "give", "provide"]
         if any(verb in query_lower for verb in extraction_verbs):
             score += 0.2
 
         # Signal 4: Training/model references (0.15)
-        model_terms = ['training', 'trained on', 'dataset', 'learned', 'memorized']
+        model_terms = ["training", "trained on", "dataset", "learned", "memorized"]
         if any(term in query_lower for term in model_terms):
             score += 0.15
 
         # Signal 5: Data-specific nouns (0.15)
-        data_nouns = ['information', 'data', 'details', 'record', 'profile', 'history']
+        data_nouns = ["information", "data", "details", "record", "profile", "history"]
         if any(noun in query_lower for noun in data_nouns):
             score += 0.15
 
@@ -261,8 +260,7 @@ class ModelStealingDetector:
         one_day_ago = now - 86400
 
         self.user_query_times[user_id] = [
-            t for t in self.user_query_times[user_id]
-            if t > one_day_ago
+            t for t in self.user_query_times[user_id] if t > one_day_ago
         ]
 
         # Check hourly rate
@@ -276,9 +274,9 @@ class ModelStealingDetector:
                 should_block=True,
                 user_id=user_id,
                 metadata={
-                    'queries_per_hour': len(recent_hour),
-                    'limit': self.max_queries_per_hour,
-                }
+                    "queries_per_hour": len(recent_hour),
+                    "limit": self.max_queries_per_hour,
+                },
             )
 
         # Check daily rate
@@ -291,18 +289,18 @@ class ModelStealingDetector:
                 should_block=True,
                 user_id=user_id,
                 metadata={
-                    'queries_per_day': len(self.user_query_times[user_id]),
-                    'limit': self.max_queries_per_day,
-                }
+                    "queries_per_day": len(self.user_query_times[user_id]),
+                    "limit": self.max_queries_per_day,
+                },
             )
 
         # Check for systematic probing
         systematic_keywords = [
-            'test case',
-            'example',
-            'sample',
-            'what if',
-            'try this',
+            "test case",
+            "example",
+            "sample",
+            "what if",
+            "try this",
         ]
 
         for keyword in systematic_keywords:
@@ -318,7 +316,7 @@ class ModelStealingDetector:
                 confidence=0.75,
                 should_block=True,
                 user_id=user_id,
-                metadata={'systematic_count': self.systematic_patterns[user_id]}
+                metadata={"systematic_count": self.systematic_patterns[user_id]},
             )
 
         return None
@@ -332,10 +330,10 @@ class ModelStealingDetector:
         query_times = self.user_query_times[user_id]
 
         return {
-            'total_queries': len(query_times),
-            'queries_last_hour': len([t for t in query_times if t > one_hour_ago]),
-            'queries_last_day': len([t for t in query_times if t > one_day_ago]),
-            'systematic_probes': self.systematic_patterns[user_id],
+            "total_queries": len(query_times),
+            "queries_last_hour": len([t for t in query_times if t > one_hour_ago]),
+            "queries_last_day": len([t for t in query_times if t > one_day_ago]),
+            "systematic_probes": self.systematic_patterns[user_id],
         }
 
 
@@ -398,8 +396,7 @@ class MembershipInferenceDetector:
             # Clean old queries
             cutoff = now - self.time_window_seconds
             self.entity_queries[user_id][entity] = [
-                t for t in self.entity_queries[user_id][entity]
-                if t > cutoff
+                t for t in self.entity_queries[user_id][entity] if t > cutoff
             ]
 
             # Check if too many queries about this entity
@@ -413,20 +410,20 @@ class MembershipInferenceDetector:
                     should_block=True,
                     user_id=user_id,
                     metadata={
-                        'entity': entity,
-                        'query_count': query_count,
-                    }
+                        "entity": entity,
+                        "query_count": query_count,
+                    },
                 )
 
         # Check for membership probing keywords
         probing_patterns = [
-            'was this in',
-            'did you train on',
-            'do you remember',
-            'have you seen',
-            'is this in your',
-            'training set',
-            'memorized',
+            "was this in",
+            "did you train on",
+            "do you remember",
+            "have you seen",
+            "is this in your",
+            "training set",
+            "memorized",
         ]
 
         for pattern in probing_patterns:
@@ -438,7 +435,7 @@ class MembershipInferenceDetector:
                     confidence=0.7,
                     should_block=True,
                     user_id=user_id,
-                    metadata={'pattern': pattern}
+                    metadata={"pattern": pattern},
                 )
 
         return None
@@ -451,15 +448,15 @@ class MembershipInferenceDetector:
         entities = []
 
         # Capitalized phrases
-        cap_words = re.findall(r'\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\b', query)
+        cap_words = re.findall(r"\b[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*\b", query)
         entities.extend(cap_words)
 
         # Email addresses
-        emails = re.findall(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b', query)
+        emails = re.findall(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b", query)
         entities.extend(emails)
 
         # Numbers that could be IDs
-        ids = re.findall(r'\b\d{6,}\b', query)
+        ids = re.findall(r"\b\d{6,}\b", query)
         entities.extend(ids)
 
         return entities[:5]  # Limit to first 5
@@ -546,10 +543,10 @@ class ModelSecurityMonitor:
         # Calculate risk score (0-100)
         risk_score = 0
         severity_weights = {
-            'low': 10,
-            'medium': 25,
-            'high': 50,
-            'critical': 100,
+            "low": 10,
+            "medium": 25,
+            "high": 50,
+            "critical": 100,
         }
 
         for alert in user_alerts[-20:]:  # Last 20 alerts
@@ -568,15 +565,15 @@ class ModelSecurityMonitor:
             risk_level = "low"
 
         return {
-            'user_id': user_id,
-            'risk_score': risk_score,
-            'risk_level': risk_level,
-            'alert_count': len(user_alerts),
-            'recent_alerts': [
+            "user_id": user_id,
+            "risk_score": risk_score,
+            "risk_level": risk_level,
+            "alert_count": len(user_alerts),
+            "recent_alerts": [
                 {
-                    'type': a.attack_type.value,
-                    'severity': a.severity,
-                    'description': a.description,
+                    "type": a.attack_type.value,
+                    "severity": a.severity,
+                    "description": a.description,
                 }
                 for a in user_alerts[-5:]
             ],
@@ -585,16 +582,14 @@ class ModelSecurityMonitor:
     def get_statistics(self) -> Dict[str, Any]:
         """Get model security statistics."""
         return {
-            'total_alerts': len(self.alerts),
-            'alerts_by_type': {
-                attack_type.value: sum(
-                    1 for a in self.alerts if a.attack_type == attack_type
-                )
+            "total_alerts": len(self.alerts),
+            "alerts_by_type": {
+                attack_type.value: sum(1 for a in self.alerts if a.attack_type == attack_type)
                 for attack_type in AttackType
             },
-            'alerts_by_severity': {
+            "alerts_by_severity": {
                 severity: sum(1 for a in self.alerts if a.severity == severity)
-                for severity in ['low', 'medium', 'high', 'critical']
+                for severity in ["low", "medium", "high", "critical"]
             },
-            'blocked_count': sum(1 for a in self.alerts if a.should_block),
+            "blocked_count": sum(1 for a in self.alerts if a.should_block),
         }

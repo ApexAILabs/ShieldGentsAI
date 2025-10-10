@@ -14,6 +14,7 @@ import threading
 
 class ResourceLimitType(Enum):
     """Types of resource limits that can be enforced."""
+
     CPU_TIME = "cpu_time"
     MEMORY = "memory"
     DISK_IO = "disk_io"
@@ -24,6 +25,7 @@ class ResourceLimitType(Enum):
 @dataclass
 class ResourceLimits:
     """Resource limits for sandboxed execution."""
+
     max_cpu_time: Optional[float] = 30.0  # seconds
     max_memory: Optional[int] = 512 * 1024 * 1024  # 512MB in bytes
     max_processes: Optional[int] = 5
@@ -35,6 +37,7 @@ class ResourceLimits:
 @dataclass
 class ExecutionResult:
     """Result of sandboxed execution."""
+
     success: bool
     return_value: Any = None
     error: Optional[str] = None
@@ -52,11 +55,13 @@ class ExecutionResult:
 
 class TimeoutException(Exception):
     """Raised when execution exceeds timeout."""
+
     pass
 
 
 class ResourceLimitException(Exception):
     """Raised when resource limits are exceeded."""
+
     pass
 
 
@@ -129,9 +134,7 @@ class ProcessSandbox:
                 exit_code = process.returncode
             except subprocess.TimeoutExpired:
                 self._kill_process_tree(process.pid)
-                raise TimeoutException(
-                    f"Execution exceeded timeout of {self.limits.timeout}s"
-                )
+                raise TimeoutException(f"Execution exceeded timeout of {self.limits.timeout}s")
 
             execution_time = time.time() - start_time
 
@@ -260,7 +263,7 @@ class FunctionSandbox:
 
         # Set up timeout (Unix-like systems only)
         old_handler = None
-        if self.limits.timeout and hasattr(signal, 'SIGALRM'):
+        if self.limits.timeout and hasattr(signal, "SIGALRM"):
             old_handler = signal.signal(signal.SIGALRM, timeout_handler)
             signal.alarm(int(self.limits.timeout))
 
@@ -285,7 +288,7 @@ class FunctionSandbox:
             )
         finally:
             # Reset alarm
-            if self.limits.timeout and hasattr(signal, 'SIGALRM'):
+            if self.limits.timeout and hasattr(signal, "SIGALRM"):
                 signal.alarm(0)
                 if old_handler:
                     signal.signal(signal.SIGALRM, old_handler)
@@ -325,6 +328,7 @@ class ToolWrapper:
         Returns:
             Wrapped function
         """
+
         def wrapped_tool(*args: Any, **kwargs: Any) -> Any:
             # Check permissions
             if self.allowed_tools and tool_name not in self.allowed_tools:
