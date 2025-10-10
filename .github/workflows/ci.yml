@@ -124,42 +124,6 @@ jobs:
   # Telegram notifications
   # ------------------------------
 
-  notify-telegram-pr:
-    name: Notify Telegram (PR opened)
-    runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'pull_request' &&
-            (github.event.action == 'opened' || github.event.action == 'reopened' || github.event.action == 'ready_for_review') &&
-            secrets.TELEGRAM_BOT_TOKEN != '' && secrets.TELEGRAM_CHAT_ID != '' }}
-    steps:
-      - name: Send Telegram message
-        env:
-          TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-          REPO: ${{ github.repository }}
-          ACTOR: ${{ github.actor }}
-          PR_NUM: ${{ github.event.pull_request.number }}
-          PR_TITLE: ${{ github.event.pull_request.title }}
-          PR_URL: ${{ github.event.pull_request.html_url }}
-          BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
-          HEAD_BRANCH: ${{ github.event.pull_request.head.ref }}
-        run: |
-          set -euo pipefail
-          API_URL="https://api.telegram.org/bot${TG_TOKEN}/sendMessage"
-          MSG="<b>New Pull Request</b>
-          Repo: <code>${REPO}</code>
-          By: <b>${ACTOR}</b>
-          PR: <b>#${PR_NUM}</b> — ${PR_TITLE}
-          Branch: <code>${HEAD_BRANCH}</code> → <code>${BASE_BRANCH}</code>
-          Link: ${PR_URL}"
-          echo "Token length: ${#TG_TOKEN}, Chat ID: ${CHAT_ID}"
-          HTTP_CODE=$(curl -sS -w "%{http_code}" -o /tmp/resp.json "$API_URL" \
-            -d "chat_id=${CHAT_ID}" \
-            -d "parse_mode=HTML" \
-            -d "disable_web_page_preview=true" \
-            --data-urlencode "text=${MSG}")
-          echo "Telegram response:"; cat /tmp/resp.json; echo; echo "HTTP ${HTTP_CODE}"
-          [ "$HTTP_CODE" = "200" ] || exit 1
-
   notify-telegram-tests-passed:
     name: Notify Telegram (Tests Passed)
     runs-on: ubuntu-latest
@@ -185,7 +149,59 @@ jobs:
             PR_NUM="${{ github.event.pull_request.number }}"
             PR_TITLE="${{ github.event.pull_request.title }}"
             PR_URL="${{ github.event.pull_request.html_url }}"
+            HEAD_BRANCH="${{ github.event.pull_request.head.ref }}"
+            BASE_BRANCH="${{ github.event.pull_request.base.ref }}"
+            MSG="✅ <b>New Pull Request - Tests Passed</b>
+          Repo: <code>${REPO}</code>
+          By: <b>${ACTOR}</b>
+          PR: <b>#${PR_NUM}</b> — ${PR_TITLE}
+          Branch: <code>${HEAD_BRANCH}</code> → <code>${BASE_BRANCH}</code>
+          Link: ${PR_URL}
+          Run: ${RUN_URL}"
+          else
+            BRANCH="${REF#refs/heads/}"
             MSG="✅ <b>Tests Passed</b>
+          Repo: <code>${REPO}</code>
+          By: <b>${ACTOR}</b>
+          Branch: <code>${BRANCH}</code>
+          Commit: <code>${SHA:0:7}</code>
+          Run: ${RUN_URL}"
+          fi
+
+          HTTP_CODE=$(curl -sS -w "%{http_code}" -o /tmp/resp.json "$API_URL" \
+            -d "chat_id=${CHAT_ID}" \
+            -d "parse_mode=HTML" \
+            -d "disable_web_page_preview=true" \
+            --data-urlencode "text=${MSG}")
+          echo "Telegram response:"; cat /tmp/resp.json; echo; echo "HTTP ${HTTP_CODE}"
+          [ "$HTTP_CODE" = "200" ] || exit 1
+
+  notify-telegram-tests-failed:
+    name: Notify Telegram (Tests Failed)
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+    if: ${{ failure() && secrets.TELEGRAM_BOT_TOKEN != '' && secrets.TELEGRAM_CHAT_ID != '' }}
+    steps:
+      - name: Send Telegram message (tests failed)
+        env:
+          TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          REPO: ${{ github.repository }}
+          ACTOR: ${{ github.actor }}
+          EVENT: ${{ github.event_name }}
+          REF: ${{ github.ref }}
+          SHA: ${{ github.sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          API_URL="https://api.telegram.org/bot${TG_TOKEN}/sendMessage"
+
+          # Format message based on event type
+          if [ "$EVENT" = "pull_request" ]; then
+            PR_NUM="${{ github.event.pull_request.number }}"
+            PR_TITLE="${{ github.event.pull_request.title }}"
+            PR_URL="${{ github.event.pull_request.html_url }}"
+            MSG="❌ <b>Tests Failed</b>
           Repo: <code>${REPO}</code>
           By: <b>${ACTOR}</b>
           PR: <b>#${PR_NUM}</b> — ${PR_TITLE}
@@ -193,7 +209,7 @@ jobs:
           Run: ${RUN_URL}"
           else
             BRANCH="${REF#refs/heads/}"
-            MSG="✅ <b>Tests Passed</b>
+            MSG="❌ <b>Tests Failed</b>
           Repo: <code>${REPO}</code>
           By: <b>${ACTOR}</b>
           Branch: <code>${BRANCH}</code>
