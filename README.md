@@ -1,11 +1,11 @@
 <div align="center">
                                     
 ```
-                                       _____ __    _      __    ________            __
-                                      / ___// /_  (_)__  / /___/ / ____/__  ____  / /______
-                                      \__ \/ __ \/ / _ \/ / __  / / __/ _ \/ __ \/ __/ ___/
-                                     ___/ / / / / /  __/ / /_/ / /_/ /  __/ / / / /_(__  )
-                                    /____/_/ /_/_/\___/_/\__,_/\____/\___/_/ /_/\__/____/
+                                _____ __    _      __    ________            __
+                                / ___// /_  (_)__  / /___/ / ____/__  ____  / /______
+                                \__ \/ __ \/ / _ \/ / __  / / __/ _ \/ __ \/ __/ ___/
+                                ___/ / / / / /  __/ / /_/ / /_/ /  __/ / / / /_(__  )
+                            /____/_/ /_/_/\___/_/\__,_/\____/\___/_/ /_/\__/____/
 ```
 
 <div align="center">
@@ -18,7 +18,7 @@
 </div>
 
 [![License](https://img.shields.io/badge/License-BSD_3--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
-[![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Python](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![PyPI](https://img.shields.io/badge/pypi-v0.1.0-blue.svg)](https://pypi.org/project/shieldgents/)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)]()
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
@@ -83,7 +83,7 @@ uv sync
 
 ---
 
-## 🎯 Quick Start
+## 🎯 Quick Start:
 
 ### 1. Prompt Injection Protection
 
@@ -160,7 +160,7 @@ is_anomaly = monitor.check_anomaly(
 data = monitor.get_dashboard_data()
 ```
 
-### 4. Access Control
+### 4. Access Control:
 
 ```python
 from shieldgents.controls import AccessControlList, ToolAccessControl, setup_default_roles

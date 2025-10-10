@@ -65,6 +65,13 @@ from shieldgents.controls.model_drift import (
     IntegrityAlert,
     DriftType,
     IntegrityThreat,
+from shieldgents.controls.hallucination_detection import (
+    HallucinationDetector,
+    KnowledgeBase,
+    ConfidenceScorer,
+    HallucinationAlert,
+    HallucinationType,
+    FactEntry,
 )
 
 __all__ = [
@@ -124,4 +131,11 @@ __all__ = [
     "IntegrityAlert",
     "DriftType",
     "IntegrityThreat",
+    # Hallucination detection
+    "HallucinationDetector",
+    "KnowledgeBase",
+    "ConfidenceScorer",
+    "HallucinationAlert",
+    "HallucinationType",
+    "FactEntry",
 ]

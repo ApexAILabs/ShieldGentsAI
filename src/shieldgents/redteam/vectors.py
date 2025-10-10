@@ -8,6 +8,7 @@ import random
 
 class AttackCategory(Enum):
     """Categories of security attacks."""
+
     PROMPT_INJECTION = "prompt_injection"
     JAILBREAK = "jailbreak"
     DATA_EXFILTRATION = "data_exfiltration"
@@ -19,6 +20,7 @@ class AttackCategory(Enum):
 @dataclass
 class AttackVector:
     """Represents a security attack vector for testing."""
+
     name: str
     category: AttackCategory
     payload: str
@@ -31,6 +33,7 @@ class AttackVector:
 @dataclass
 class TestResult:
     """Result of a security test."""
+
     attack_vector: AttackVector
     passed: bool
     response: Any = None
@@ -154,12 +157,7 @@ class AttackVectorLibrary:
     @classmethod
     def get_all_vectors(cls) -> List[AttackVector]:
         """Get all attack vectors."""
-        return (
-            cls.PROMPT_INJECTIONS
-            + cls.JAILBREAKS
-            + cls.DATA_EXFILTRATION
-            + cls.TOOL_MISUSE
-        )
+        return cls.PROMPT_INJECTIONS + cls.JAILBREAKS + cls.DATA_EXFILTRATION + cls.TOOL_MISUSE
 
     @classmethod
     def get_by_category(cls, category: AttackCategory) -> List[AttackVector]:
@@ -337,8 +335,7 @@ class FuzzTester:
 
         chars = string.ascii_letters + string.digits + string.punctuation + " "
         return [
-            "".join(random.choices(chars, k=random.randint(1, max_length)))
-            for _ in range(count)
+            "".join(random.choices(chars, k=random.randint(1, max_length))) for _ in range(count)
         ]
 
     @staticmethod

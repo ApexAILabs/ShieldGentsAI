@@ -60,7 +60,7 @@ def main():
             print(f"✅ Response: {result['response']}")
             print(f"   Remaining requests: {result['remaining']}")
             if result["security"]["pii_detected"]:
-                print(f"   ⚠️  PII was detected and redacted")
+                print("   ⚠️  PII was detected and redacted")
         else:
             print(f"❌ Blocked: {result['error']}")
             if "threat_level" in result:
@@ -74,11 +74,11 @@ def main():
     metrics = agent.get_metrics()
 
     print(f"Agent ID: {metrics['agent_id']}")
-    print(f"\nEvents:")
+    print("\nEvents:")
     for event_name, count in metrics["security_metrics"]["metrics"]["counters"].items():
         print(f"  {event_name}: {count}")
 
-    print(f"\nAudit Log:")
+    print("\nAudit Log:")
     audit = metrics["audit_summary"]
     print(f"  Total events: {audit['total_events']}")
     print(f"  By type: {audit['by_type']}")

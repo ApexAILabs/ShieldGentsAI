@@ -36,6 +36,7 @@ from shieldgents.governance import AuditEventType, AuditLogger
 # AGENT TOOLS (These are the actual tools your agent would use)
 # ============================================================================
 
+
 def web_search_tool(query: str) -> str:
     """Search the web for information."""
     # In production: call real search API
@@ -70,6 +71,7 @@ def send_email_tool(to: str, subject: str, body: str) -> bool:
 # ============================================================================
 # PRODUCTION AGENT WITH MONITORING
 # ============================================================================
+
 
 class ProductionAgent:
     """
@@ -291,6 +293,7 @@ class ProductionAgent:
 # DASHBOARD FOR MONITORING
 # ============================================================================
 
+
 def run_dashboard():
     """Run monitoring dashboard for the production agent."""
     import streamlit as st
@@ -305,7 +308,7 @@ def run_dashboard():
     st.markdown("### Real-time monitoring of agent with tools and MCP")
 
     # Initialize agent (or connect to running agent)
-    if 'agent' not in st.session_state:
+    if "agent" not in st.session_state:
         st.session_state.agent = ProductionAgent()
 
     agent = st.session_state.agent
@@ -317,7 +320,7 @@ def run_dashboard():
         user_id = st.text_input("User ID", value="demo-user")
         user_input = st.text_area(
             "Request:",
-            placeholder="Search for AI agents\nCalculate 2+2\nQuery database\nSend email to team@example.com"
+            placeholder="Search for AI agents\nCalculate 2+2\nQuery database\nSend email to team@example.com",
         )
 
         if st.button("📤 Send Request", type="primary"):
@@ -376,16 +379,14 @@ def run_dashboard():
 
     with col1:
         st.subheader("📊 Tool Usage")
-        tool_data = {
-            k: v for k, v in data.get("counters", {}).items()
-            if "tool" in k.lower()
-        }
+        tool_data = {k: v for k, v in data.get("counters", {}).items() if "tool" in k.lower()}
         if tool_data:
             import plotly.express as px
+
             fig = px.bar(
                 x=list(tool_data.keys()),
                 y=list(tool_data.values()),
-                labels={"x": "Tool", "y": "Calls"}
+                labels={"x": "Tool", "y": "Calls"},
             )
             st.plotly_chart(fig, use_container_width=True)
         else:
@@ -400,6 +401,7 @@ def run_dashboard():
         }
         if security_events:
             import plotly.express as px
+
             fig = px.pie(values=list(security_events.values()), names=list(security_events.keys()))
             st.plotly_chart(fig, use_container_width=True)
         else:
@@ -414,6 +416,7 @@ def run_dashboard():
 # ============================================================================
 # CLI
 # ============================================================================
+
 
 def main():
     if len(sys.argv) < 2:

@@ -2,15 +2,17 @@ import pytest
 import sys
 from pathlib import Path
 
-VENV_SITE_PACKAGES = next((Path(__file__).resolve().parents[1] / '.venv' / 'lib').glob('python*/site-packages'), None)
+VENV_SITE_PACKAGES = next(
+    (Path(__file__).resolve().parents[1] / ".venv" / "lib").glob("python*/site-packages"), None
+)
 if VENV_SITE_PACKAGES and str(VENV_SITE_PACKAGES) not in sys.path:
     sys.path.insert(0, str(VENV_SITE_PACKAGES))
 
-from langchain_core.prompts import PromptTemplate
-from langchain_core.runnables import RunnableLambda
+from langchain_core.prompts import PromptTemplate  # noqa: E402
+from langchain_core.runnables import RunnableLambda  # noqa: E402
 
-from shieldgents import AgentShield
-from shieldgents.integrations.agent_shield import SecurityViolation
+from shieldgents import AgentShield  # noqa: E402
+from shieldgents.integrations.agent_shield import SecurityViolation  # noqa: E402
 
 
 def build_demo_chain():

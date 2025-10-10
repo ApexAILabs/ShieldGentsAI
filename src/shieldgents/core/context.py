@@ -1,13 +1,14 @@
 """Context window management and PII detection for agentic AI systems."""
 
 import re
-from typing import List, Dict, Any, Optional, Set
+from typing import List, Dict, Any, Optional
 from dataclasses import dataclass, field
 from enum import Enum
 
 
 class PIIType(Enum):
     """Types of personally identifiable information."""
+
     EMAIL = "email"
     PHONE = "phone"
     SSN = "ssn"
@@ -22,6 +23,7 @@ class PIIType(Enum):
 @dataclass
 class PIIMatch:
     """Detected PII match."""
+
     pii_type: PIIType
     value: str
     start: int
@@ -32,6 +34,7 @@ class PIIMatch:
 @dataclass
 class PIIScanResult:
     """Result of PII scanning."""
+
     has_pii: bool
     matches: List[PIIMatch] = field(default_factory=list)
     redacted_text: Optional[str] = None
@@ -222,7 +225,13 @@ class ConversationMemory:
         self.summaries: List[str] = []
 
     def add_turn(self, user_input: str, assistant_response: str) -> None:
-        """Add a conversation turn."""
+        """
+        Add a conversation turn.
+
+        Args:
+            user_input: User's input message
+            assistant_response: Assistant's response message
+        """
         if not self.context_manager.has_capacity() and self.enable_summarization:
             self._summarize_and_compress()
 
@@ -230,7 +239,12 @@ class ConversationMemory:
         self.context_manager.add_message("assistant", assistant_response)
 
     def get_context_for_prompt(self) -> str:
-        """Get formatted context for LLM prompt."""
+        """
+        Get formatted context for LLM prompt.
+
+        Returns:
+            Formatted string containing conversation history and summaries
+        """
         parts = []
 
         # Add summaries
@@ -298,9 +312,7 @@ class RateLimiter:
             self.requests[key] = []
 
         # Remove old requests
-        self.requests[key] = [
-            t for t in self.requests[key] if now - t < self.window_seconds
-        ]
+        self.requests[key] = [t for t in self.requests[key] if now - t < self.window_seconds]
 
         # Check limit
         if len(self.requests[key]) >= self.max_requests:
@@ -311,7 +323,15 @@ class RateLimiter:
         return True
 
     def get_remaining(self, key: str) -> int:
-        """Get remaining requests for key."""
+        """
+        Get remaining requests for key.
+
+        Args:
+            key: Rate limit key to check
+
+        Returns:
+            Number of remaining requests in current window
+        """
         import time
 
         now = time.time()
@@ -320,8 +340,6 @@ class RateLimiter:
             return self.max_requests
 
         # Clean old requests
-        self.requests[key] = [
-            t for t in self.requests[key] if now - t < self.window_seconds
-        ]
+        self.requests[key] = [t for t in self.requests[key] if now - t < self.window_seconds]
 
         return max(0, self.max_requests - len(self.requests[key]))

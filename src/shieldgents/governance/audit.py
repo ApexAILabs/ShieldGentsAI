@@ -11,6 +11,7 @@ from pathlib import Path
 
 class AuditEventType(Enum):
     """Types of audit events."""
+
     AGENT_START = "agent_start"
     AGENT_STOP = "agent_stop"
     TOOL_CALL = "tool_call"
@@ -25,6 +26,7 @@ class AuditEventType(Enum):
 @dataclass
 class AuditEvent:
     """Audit event record."""
+
     event_id: str
     event_type: AuditEventType
     timestamp: float
@@ -36,13 +38,23 @@ class AuditEvent:
     metadata: Dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> Dict[str, Any]:
-        """Convert to dictionary."""
+        """
+        Convert to dictionary.
+
+        Returns:
+            Dictionary representation of the audit event
+        """
         data = asdict(self)
         data["event_type"] = self.event_type.value
         return data
 
     def to_json(self) -> str:
-        """Convert to JSON string."""
+        """
+        Convert to JSON string.
+
+        Returns:
+            JSON string representation of the audit event
+        """
         return json.dumps(self.to_dict(), indent=2)
 
 
@@ -127,15 +139,28 @@ class AuditLogger:
         return event
 
     def _generate_event_id(self) -> str:
-        """Generate unique event ID."""
+        """
+        Generate unique event ID.
+
+        Returns:
+            UUID string for the event
+        """
         import uuid
+
         return str(uuid.uuid4())
 
     def _sign_event(self, event: AuditEvent) -> str:
         """
         Create signature for event.
 
-        In production, use proper HMAC with secret key.
+        Args:
+            event: Audit event to sign
+
+        Returns:
+            SHA256 hash signature (first 16 chars)
+
+        Note:
+            In production, use proper HMAC with secret key.
         """
         data = json.dumps(event.to_dict(), sort_keys=True)
         return hashlib.sha256(data.encode()).hexdigest()[:16]
@@ -215,21 +240,15 @@ class AuditLogger:
             report["by_type"][event_type] = report["by_type"].get(event_type, 0) + 1
 
             # Count by outcome
-            report["by_outcome"][event.outcome] = (
-                report["by_outcome"].get(event.outcome, 0) + 1
-            )
+            report["by_outcome"][event.outcome] = report["by_outcome"].get(event.outcome, 0) + 1
 
             # Count by agent
             if event.agent_id:
-                report["by_agent"][event.agent_id] = (
-                    report["by_agent"].get(event.agent_id, 0) + 1
-                )
+                report["by_agent"][event.agent_id] = report["by_agent"].get(event.agent_id, 0) + 1
 
             # Count by user
             if event.user_id:
-                report["by_user"][event.user_id] = (
-                    report["by_user"].get(event.user_id, 0) + 1
-                )
+                report["by_user"][event.user_id] = report["by_user"].get(event.user_id, 0) + 1
 
         return report
 

@@ -11,7 +11,7 @@ Tools for deploying agents to production safely:
 
 import time
 from typing import Callable, Optional, Any, Dict, List
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum
 from datetime import datetime, timedelta
 from collections import deque
@@ -20,6 +20,7 @@ import functools
 
 class HealthStatus(Enum):
     """Agent health status."""
+
     HEALTHY = "healthy"
     DEGRADED = "degraded"
     UNHEALTHY = "unhealthy"
@@ -28,6 +29,7 @@ class HealthStatus(Enum):
 
 class CircuitState(Enum):
     """Circuit breaker states."""
+
     CLOSED = "closed"  # Normal operation
     OPEN = "open"  # Failing, rejecting requests
     HALF_OPEN = "half_open"  # Testing if recovered
@@ -36,6 +38,7 @@ class CircuitState(Enum):
 @dataclass
 class HealthCheck:
     """Health check result."""
+
     status: HealthStatus
     checks: Dict[str, bool]
     message: str
@@ -46,6 +49,7 @@ class HealthCheck:
 @dataclass
 class Metrics:
     """Production metrics."""
+
     request_count: int = 0
     error_count: int = 0
     success_count: int = 0
@@ -98,8 +102,9 @@ class CircuitBreaker:
         """
         if self.state == CircuitState.OPEN:
             # Check if timeout has passed
-            if self.last_failure_time and \
-               datetime.now() - self.last_failure_time >= timedelta(seconds=self.timeout):
+            if self.last_failure_time and datetime.now() - self.last_failure_time >= timedelta(
+                seconds=self.timeout
+            ):
                 self.state = CircuitState.HALF_OPEN
                 self.success_count = 0
             else:
@@ -184,8 +189,8 @@ class RateLimiterProduction:
         if self.tokens[key] >= 1.0:
             self.tokens[key] -= 1.0
             return True, {
-                'remaining': int(self.tokens[key]),
-                'retry_after': 0,
+                "remaining": int(self.tokens[key]),
+                "retry_after": 0,
             }
         else:
             # Calculate retry after
@@ -193,8 +198,8 @@ class RateLimiterProduction:
             retry_after = (tokens_needed / self.rate) * self.time_window
 
             return False, {
-                'remaining': 0,
-                'retry_after': int(retry_after),
+                "remaining": 0,
+                "retry_after": int(retry_after),
             }
 
 
@@ -226,11 +231,15 @@ class ProductionAgent:
         self.circuit_breaker = CircuitBreaker() if enable_circuit_breaker else None
 
         # Rate limiter
-        self.rate_limiter = RateLimiterProduction(
-            rate=rate_limit,
-            capacity=rate_limit * 2,
-            time_window=60,
-        ) if enable_rate_limiting else None
+        self.rate_limiter = (
+            RateLimiterProduction(
+                rate=rate_limit,
+                capacity=rate_limit * 2,
+                time_window=60,
+            )
+            if enable_rate_limiting
+            else None
+        )
 
         # Metrics
         self.metrics = Metrics()
@@ -240,12 +249,7 @@ class ProductionAgent:
         self.last_health_check: Optional[HealthCheck] = None
         self.startup_time = datetime.now()
 
-    def invoke(
-        self,
-        user_input: str,
-        user_id: str = "default",
-        **kwargs
-    ) -> Dict[str, Any]:
+    def invoke(self, user_input: str, user_id: str = "default", **kwargs) -> Dict[str, Any]:
         """
         Invoke agent with production safeguards.
 
@@ -266,18 +270,14 @@ class ProductionAgent:
                 allowed, limit_info = self.rate_limiter.allow_request(user_id)
                 if not allowed:
                     return {
-                        'success': False,
-                        'error': 'Rate limit exceeded',
-                        'retry_after': limit_info['retry_after'],
+                        "success": False,
+                        "error": "Rate limit exceeded",
+                        "retry_after": limit_info["retry_after"],
                     }
 
             # 2. Circuit breaker
             if self.circuit_breaker:
-                result = self.circuit_breaker.call(
-                    self.agent_func,
-                    user_input,
-                    **kwargs
-                )
+                result = self.circuit_breaker.call(self.agent_func, user_input, **kwargs)
             else:
                 result = self.agent_func(user_input, **kwargs)
 
@@ -289,10 +289,10 @@ class ProductionAgent:
             self._update_latency_percentiles()
 
             return {
-                'success': True,
-                'result': result,
-                'latency_ms': latency_ms,
-                'agent_id': self.agent_id,
+                "success": True,
+                "result": result,
+                "latency_ms": latency_ms,
+                "agent_id": self.agent_id,
             }
 
         except Exception as e:
@@ -301,11 +301,11 @@ class ProductionAgent:
             self.metrics.error_count += 1
 
             return {
-                'success': False,
-                'error': str(e),
-                'error_type': type(e).__name__,
-                'latency_ms': latency_ms,
-                'agent_id': self.agent_id,
+                "success": False,
+                "error": str(e),
+                "error_type": type(e).__name__,
+                "latency_ms": latency_ms,
+                "agent_id": self.agent_id,
             }
 
     def health_check(self) -> HealthCheck:
@@ -320,26 +320,26 @@ class ProductionAgent:
 
         # Check 1: Circuit breaker state
         if self.circuit_breaker:
-            checks['circuit_breaker'] = self.circuit_breaker.state == CircuitState.CLOSED
+            checks["circuit_breaker"] = self.circuit_breaker.state == CircuitState.CLOSED
         else:
-            checks['circuit_breaker'] = True
+            checks["circuit_breaker"] = True
 
         # Check 2: Error rate
         if self.metrics.request_count > 0:
             error_rate = self.metrics.error_count / self.metrics.request_count
-            checks['error_rate'] = error_rate < 0.1  # Less than 10%
+            checks["error_rate"] = error_rate < 0.1  # Less than 10%
         else:
-            checks['error_rate'] = True
+            checks["error_rate"] = True
 
         # Check 3: Latency
         if self.metrics.p95_latency_ms > 0:
-            checks['latency'] = self.metrics.p95_latency_ms < 5000  # Less than 5s
+            checks["latency"] = self.metrics.p95_latency_ms < 5000  # Less than 5s
         else:
-            checks['latency'] = True
+            checks["latency"] = True
 
         # Check 4: Uptime
         uptime = (datetime.now() - self.startup_time).total_seconds()
-        checks['uptime'] = uptime > 10  # At least 10 seconds
+        checks["uptime"] = uptime > 10  # At least 10 seconds
 
         # Determine overall status
         if all(checks.values()):
@@ -383,17 +383,27 @@ class ProductionAgent:
     def get_metrics(self) -> Dict[str, Any]:
         """Get production metrics."""
         return {
-            'agent_id': self.agent_id,
-            'request_count': self.metrics.request_count,
-            'success_count': self.metrics.success_count,
-            'error_count': self.metrics.error_count,
-            'error_rate': self.metrics.error_count / self.metrics.request_count if self.metrics.request_count > 0 else 0,
-            'avg_latency_ms': self.metrics.total_latency_ms / self.metrics.success_count if self.metrics.success_count > 0 else 0,
-            'p50_latency_ms': self.metrics.p50_latency_ms,
-            'p95_latency_ms': self.metrics.p95_latency_ms,
-            'p99_latency_ms': self.metrics.p99_latency_ms,
-            'uptime_seconds': (datetime.now() - self.startup_time).total_seconds(),
-            'circuit_breaker_state': self.circuit_breaker.state.value if self.circuit_breaker else 'disabled',
+            "agent_id": self.agent_id,
+            "request_count": self.metrics.request_count,
+            "success_count": self.metrics.success_count,
+            "error_count": self.metrics.error_count,
+            "error_rate": (
+                self.metrics.error_count / self.metrics.request_count
+                if self.metrics.request_count > 0
+                else 0
+            ),
+            "avg_latency_ms": (
+                self.metrics.total_latency_ms / self.metrics.success_count
+                if self.metrics.success_count > 0
+                else 0
+            ),
+            "p50_latency_ms": self.metrics.p50_latency_ms,
+            "p95_latency_ms": self.metrics.p95_latency_ms,
+            "p99_latency_ms": self.metrics.p99_latency_ms,
+            "uptime_seconds": (datetime.now() - self.startup_time).total_seconds(),
+            "circuit_breaker_state": (
+                self.circuit_breaker.state.value if self.circuit_breaker else "disabled"
+            ),
         }
 
     def _update_latency_percentiles(self):
@@ -445,10 +455,10 @@ class FallbackHandler:
         self.fallback_index += 1
 
         return {
-            'success': False,
-            'response': response,
-            'fallback': True,
-            'error_type': type(error).__name__,
+            "success": False,
+            "response": response,
+            "fallback": True,
+            "error_type": type(error).__name__,
         }
 
 
@@ -470,6 +480,7 @@ def production_ready(
     Returns:
         Decorated function
     """
+
     def decorator(func: Callable) -> Callable:
         production_agent = ProductionAgent(
             agent_func=func,

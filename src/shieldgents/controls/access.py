@@ -1,15 +1,15 @@
 """Role-based access control (RBAC) for agent tools and resources."""
 
-from typing import Any, Dict, List, Optional, Set, Callable
+from typing import Any, Dict, Optional, Set, Callable
 from dataclasses import dataclass, field
 from enum import Enum
 import hashlib
-import json
 from functools import wraps
 
 
 class Permission(Enum):
     """Standard permission types."""
+
     READ = "read"
     WRITE = "write"
     EXECUTE = "execute"
@@ -20,6 +20,7 @@ class Permission(Enum):
 @dataclass
 class Role:
     """Role definition with permissions."""
+
     name: str
     permissions: Set[str] = field(default_factory=set)
     resource_patterns: Set[str] = field(default_factory=set)
@@ -69,6 +70,7 @@ class Role:
 @dataclass
 class User:
     """User with assigned roles."""
+
     id: str
     username: str
     roles: Set[str] = field(default_factory=set)
@@ -217,9 +219,7 @@ class ToolAccessControl:
             "metadata": metadata or {},
         }
 
-    def can_use_tool(
-        self, user_id: str, tool_name: str, resource: Optional[str] = None
-    ) -> bool:
+    def can_use_tool(self, user_id: str, tool_name: str, resource: Optional[str] = None) -> bool:
         """
         Check if user can use a specific tool.
 
@@ -256,6 +256,7 @@ class ToolAccessControl:
         Returns:
             Decorator function
         """
+
         def decorator(func: Callable) -> Callable:
             @wraps(func)
             def wrapper(*args: Any, **kwargs: Any) -> Any:

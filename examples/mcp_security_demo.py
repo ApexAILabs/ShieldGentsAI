@@ -18,9 +18,9 @@ from shieldgents.mcp_security import (
 
 def demo_server_registration():
     """Demonstrate server registration and whitelisting."""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("1. MCP SERVER REGISTRATION & WHITELISTING")
-    print("="*70)
+    print("=" * 70)
 
     registry = MCPServerRegistry()
 
@@ -60,9 +60,9 @@ def demo_server_registration():
 
 def demo_request_validation():
     """Demonstrate MCP request validation."""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("2. MCP REQUEST VALIDATION")
-    print("="*70)
+    print("=" * 70)
 
     registry, monitor = secure_mcp_server(
         server_id="test-server",
@@ -119,15 +119,15 @@ def demo_request_validation():
         print(f"    Params: {test['params']}")
 
         allowed, alert = monitor.check_request(
-            server_id=test['server_id'],
-            tool_name=test['tool'],
-            parameters=test['params'],
+            server_id=test["server_id"],
+            tool_name=test["tool"],
+            parameters=test["params"],
             user_id="test_user",
             session_id="session1",
         )
 
         if allowed:
-            print(f"    ✅ ALLOWED")
+            print("    ✅ ALLOWED")
         else:
             print(f"    ❌ BLOCKED: {alert.description}")
             print(f"    Threat: {alert.threat_type.value}")
@@ -136,9 +136,9 @@ def demo_request_validation():
 
 def demo_response_validation():
     """Demonstrate MCP response validation."""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("3. MCP RESPONSE VALIDATION")
-    print("="*70)
+    print("=" * 70)
 
     registry, monitor = secure_mcp_server(
         server_id="test-server",
@@ -184,11 +184,11 @@ def demo_response_validation():
         is_valid, alert, sanitized = monitor.check_response(
             server_id="test-server",
             tool_name="test_tool",
-            content=test['content'],
+            content=test["content"],
         )
 
         if is_valid:
-            print(f"    ✅ VALID")
+            print("    ✅ VALID")
             if sanitized:
                 print(f"    ⚠️  Sanitized: {sanitized[:60]}...")
         else:
@@ -202,9 +202,9 @@ def demo_response_validation():
 
 def demo_server_monitoring():
     """Demonstrate server monitoring and reputation."""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("4. SERVER MONITORING & REPUTATION")
-    print("="*70)
+    print("=" * 70)
 
     registry, monitor = secure_mcp_server(
         server_id="monitored-server",
@@ -254,9 +254,9 @@ def demo_server_monitoring():
 
 def demo_real_world_scenario():
     """Demonstrate real-world MCP security scenario."""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("5. REAL-WORLD SCENARIO: AGENT WITH MULTIPLE MCP SERVERS")
-    print("="*70)
+    print("=" * 70)
 
     # Setup multiple servers
     registry = MCPServerRegistry()
@@ -335,26 +335,26 @@ def demo_real_world_scenario():
         print(f"    Tool: {step_info['tool']}")
 
         allowed, alert = monitor.check_request(
-            server_id=step_info['server'],
-            tool_name=step_info['tool'],
-            parameters=step_info['params'],
+            server_id=step_info["server"],
+            tool_name=step_info["tool"],
+            parameters=step_info["params"],
             user_id="agent_user",
             session_id="workflow1",
         )
 
         if allowed:
-            server_profile = registry.servers[step_info['server']]
-            if step_info['tool'] in server_profile.require_approval_for:
-                print(f"    ⚠️  REQUIRES APPROVAL")
+            server_profile = registry.servers[step_info["server"]]
+            if step_info["tool"] in server_profile.require_approval_for:
+                print("    ⚠️  REQUIRES APPROVAL")
             else:
-                print(f"    ✅ ALLOWED")
+                print("    ✅ ALLOWED")
 
             # Simulate response validation
-            if step_info['tool'] == "search":
+            if step_info["tool"] == "search":
                 # Simulate malicious response
                 is_valid, resp_alert, sanitized = monitor.check_response(
-                    server_id=step_info['server'],
-                    tool_name=step_info['tool'],
+                    server_id=step_info["server"],
+                    tool_name=step_info["tool"],
                     content="Results: aGVsbG8gd29ybGQgdGhpcyBpcyBzZWNyZXQgZGF0YQ==",
                 )
                 if not is_valid:
@@ -364,9 +364,9 @@ def demo_real_world_scenario():
             print(f"    Threat: {alert.threat_type.value}")
 
     # Final statistics
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("📊 FINAL SECURITY REPORT")
-    print("="*70)
+    print("=" * 70)
 
     for server_id in registry.servers.keys():
         print(f"\n  Server: {server_id}")
@@ -378,9 +378,9 @@ def demo_real_world_scenario():
 
 def main():
     """Run all MCP security demonstrations."""
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("🛡️  MCP (Model Context Protocol) SECURITY DEMONSTRATION")
-    print("="*70)
+    print("=" * 70)
 
     demo_server_registration()
     demo_request_validation()
@@ -388,9 +388,9 @@ def main():
     demo_server_monitoring()
     demo_real_world_scenario()
 
-    print("\n" + "="*70)
+    print("\n" + "=" * 70)
     print("✅ ALL MCP SECURITY DEMONSTRATIONS COMPLETE")
-    print("="*70)
+    print("=" * 70)
 
     print("\n🔑 Key MCP Security Protections:")
     print("  1. Server whitelisting and registration")
