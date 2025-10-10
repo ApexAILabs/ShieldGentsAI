@@ -1,0 +1,36 @@
+name: Notify Telegram on PR
+
+on:
+  pull_request:
+    types: [opened, reopened, ready_for_review]
+    branches: [ main, master ]  # adjust if needed
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Telegram message
+        env:
+          TG_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          REPO: ${{ github.repository }}
+          ACTOR: ${{ github.actor }}
+          PR_NUM: ${{ github.event.pull_request.number }}
+          PR_TITLE: ${{ github.event.pull_request.title }}
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          BASE_BRANCH: ${{ github.event.pull_request.base.ref }}
+          HEAD_BRANCH: ${{ github.event.pull_request.head.ref }}
+        run: |
+          # Build a simple HTML-formatted message (safe for Telegram)
+          MSG="<b>New Pull Request</b>%0A\
+          Repo: <code>${REPO}</code>%0A\
+          By: <b>${ACTOR}</b>%0A\
+          PR: <b>#${PR_NUM}</b> — ${PR_TITLE}%0A\
+          Branch: <code>${HEAD_BRANCH}</code> → <code>${BASE_BRANCH}</code>%0A\
+          Link: ${PR_URL}"
+
+          curl -sS "https://api.telegram.org/bot${TG_TOKEN}/sendMessage" \
+            -d chat_id="${CHAT_ID}" \
+            -d text="${MSG}" \
+            -d parse_mode="HTML" \
+            -d disable_web_page_preview=true
