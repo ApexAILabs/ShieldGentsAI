@@ -83,7 +83,7 @@ uv sync
 
 ---
 
-## 🎯 Quick Start
+## 🎯 Quick Start:
 
 ### 1. Prompt Injection Protection
 
