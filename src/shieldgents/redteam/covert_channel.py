@@ -9,9 +9,8 @@ Detects sophisticated data exfiltration through:
 """
 
 import re
-import time
 import unicodedata
-from typing import List, Dict, Optional, Any, Tuple
+from typing import List, Dict, Optional, Any
 from dataclasses import dataclass, field
 from collections import Counter
 from enum import Enum
@@ -20,6 +19,7 @@ import math
 
 class CovertChannelType(Enum):
     """Types of covert channels."""
+
     TIMING_CHANNEL = "timing_channel"
     UNICODE_STEGANOGRAPHY = "unicode_steganography"
     ZERO_WIDTH_CHARS = "zero_width_chars"
@@ -33,6 +33,7 @@ class CovertChannelType(Enum):
 @dataclass
 class CovertChannelDetection:
     """Result of covert channel detection."""
+
     detected: bool
     channel_types: List[CovertChannelType]
     confidence: float  # 0.0 to 1.0
@@ -55,12 +56,12 @@ class CovertChannelDetector:
 
         # Zero-width and invisible characters
         self.zero_width_chars = {
-            '\u200b',  # Zero-width space
-            '\u200c',  # Zero-width non-joiner
-            '\u200d',  # Zero-width joiner
-            '\u2060',  # Word joiner
-            '\ufeff',  # Zero-width no-break space
-            '\u180e',  # Mongolian vowel separator
+            "\u200b",  # Zero-width space
+            "\u200c",  # Zero-width non-joiner
+            "\u200d",  # Zero-width joiner
+            "\u2060",  # Word joiner
+            "\ufeff",  # Zero-width no-break space
+            "\u180e",  # Mongolian vowel separator
         }
 
         # Homoglyph detection (visually similar characters)
@@ -99,42 +100,42 @@ class CovertChannelDetector:
         if zero_width_result:
             channel_types.append(CovertChannelType.ZERO_WIDTH_CHARS)
             evidence.append(f"Found {zero_width_result['count']} zero-width characters")
-            metadata['zero_width'] = zero_width_result
+            metadata["zero_width"] = zero_width_result
 
         # 2. Check for suspicious Unicode
         unicode_result = self._detect_unicode_steganography(output)
         if unicode_result:
             channel_types.append(CovertChannelType.UNICODE_STEGANOGRAPHY)
-            evidence.append(f"Suspicious Unicode patterns detected")
-            metadata['unicode_steg'] = unicode_result
+            evidence.append("Suspicious Unicode patterns detected")
+            metadata["unicode_steg"] = unicode_result
 
         # 3. Check for whitespace encoding
         whitespace_result = self._detect_whitespace_encoding(output)
         if whitespace_result:
             channel_types.append(CovertChannelType.WHITESPACE_ENCODING)
             evidence.append("Unusual whitespace patterns")
-            metadata['whitespace'] = whitespace_result
+            metadata["whitespace"] = whitespace_result
 
         # 4. Check for case-based encoding
         case_result = self._detect_case_encoding(output)
         if case_result:
             channel_types.append(CovertChannelType.CASE_ENCODING)
             evidence.append("Suspicious case patterns")
-            metadata['case_encoding'] = case_result
+            metadata["case_encoding"] = case_result
 
         # 5. Check for statistical anomalies
         stats_result = self._detect_statistical_anomalies(output)
         if stats_result:
             channel_types.append(CovertChannelType.STATISTICAL_ANOMALY)
             evidence.append("Statistical anomalies in output")
-            metadata['statistics'] = stats_result
+            metadata["statistics"] = stats_result
 
         # 6. Check for punctuation patterns
         punct_result = self._detect_punctuation_patterns(output)
         if punct_result:
             channel_types.append(CovertChannelType.PUNCTUATION_PATTERN)
             evidence.append("Unusual punctuation patterns")
-            metadata['punctuation'] = punct_result
+            metadata["punctuation"] = punct_result
 
         # 7. Check timing channel
         if generation_time is not None:
@@ -142,14 +143,14 @@ class CovertChannelDetector:
             if timing_result:
                 channel_types.append(CovertChannelType.TIMING_CHANNEL)
                 evidence.append("Suspicious timing pattern")
-                metadata['timing'] = timing_result
+                metadata["timing"] = timing_result
 
         # 8. Check token-level encoding
         token_result = self._detect_token_encoding(output)
         if token_result:
             channel_types.append(CovertChannelType.TOKEN_ENCODING)
             evidence.append("Token-level encoding detected")
-            metadata['token_encoding'] = token_result
+            metadata["token_encoding"] = token_result
 
         # Calculate confidence
         confidence = self._calculate_confidence(channel_types, metadata)
@@ -177,8 +178,8 @@ class CovertChannelDetector:
             # Count occurrences
             counts = Counter(zero_width_found)
             return {
-                'count': len(zero_width_found),
-                'characters': {ord(c): count for c, count in counts.items()},
+                "count": len(zero_width_found),
+                "characters": {ord(c): count for c, count in counts.items()},
             }
 
         return None
@@ -192,17 +193,19 @@ class CovertChannelDetector:
             # Check if in suspicious ranges
             for start, end in self.suspicious_unicode_ranges:
                 if start <= code_point <= end:
-                    suspicious_chars.append({
-                        'char': char,
-                        'code_point': code_point,
-                        'name': unicodedata.name(char, 'UNKNOWN'),
-                    })
+                    suspicious_chars.append(
+                        {
+                            "char": char,
+                            "code_point": code_point,
+                            "name": unicodedata.name(char, "UNKNOWN"),
+                        }
+                    )
                     break
 
         if len(suspicious_chars) > 5:  # Threshold
             return {
-                'count': len(suspicious_chars),
-                'samples': suspicious_chars[:5],
+                "count": len(suspicious_chars),
+                "samples": suspicious_chars[:5],
             }
 
         return None
@@ -210,7 +213,7 @@ class CovertChannelDetector:
     def _detect_whitespace_encoding(self, text: str) -> Optional[Dict[str, Any]]:
         """Detect encoding in whitespace patterns."""
         # Look for unusual sequences of spaces/tabs
-        whitespace_pattern = re.compile(r'[ \t]{3,}')
+        whitespace_pattern = re.compile(r"[ \t]{3,}")
         matches = whitespace_pattern.findall(text)
 
         if matches:
@@ -218,9 +221,9 @@ class CovertChannelDetector:
             unique_patterns = set(matches)
             if len(unique_patterns) > 3:  # Multiple different patterns
                 return {
-                    'pattern_count': len(unique_patterns),
-                    'total_occurrences': len(matches),
-                    'samples': list(unique_patterns)[:3],
+                    "pattern_count": len(unique_patterns),
+                    "total_occurrences": len(matches),
+                    "samples": list(unique_patterns)[:3],
                 }
 
         return None
@@ -228,7 +231,7 @@ class CovertChannelDetector:
     def _detect_case_encoding(self, text: str) -> Optional[Dict[str, Any]]:
         """Detect encoding via unusual capitalization."""
         # Look for unusual case patterns
-        words = re.findall(r'\b[A-Za-z]+\b', text)
+        words = re.findall(r"\b[A-Za-z]+\b", text)
 
         if not words:
             return None
@@ -240,9 +243,9 @@ class CovertChannelDetector:
 
         if mixed_case_ratio > 0.15:  # More than 15% mixed case
             return {
-                'mixed_case_ratio': mixed_case_ratio,
-                'mixed_case_count': len(mixed_case),
-                'samples': mixed_case[:5],
+                "mixed_case_ratio": mixed_case_ratio,
+                "mixed_case_count": len(mixed_case),
+                "samples": mixed_case[:5],
             }
 
         return None
@@ -259,8 +262,8 @@ class CovertChannelDetector:
         # Random/encoded data is higher (6.0+)
         if entropy > 5.5:
             return {
-                'entropy': entropy,
-                'reason': 'High entropy suggests encoded data',
+                "entropy": entropy,
+                "reason": "High entropy suggests encoded data",
             }
 
         # Check character distribution
@@ -276,8 +279,8 @@ class CovertChannelDetector:
             # Normal text has more variance
             if max_ratio < 0.05:  # Too uniform
                 return {
-                    'character_distribution': 'too uniform',
-                    'max_char_ratio': max_ratio,
+                    "character_distribution": "too uniform",
+                    "max_char_ratio": max_ratio,
                 }
 
         return None
@@ -285,22 +288,22 @@ class CovertChannelDetector:
     def _detect_punctuation_patterns(self, text: str) -> Optional[Dict[str, Any]]:
         """Detect encoding via punctuation patterns."""
         # Find punctuation sequences
-        punct_pattern = re.compile(r'[.,;:!?]{2,}')
+        punct_pattern = re.compile(r"[.,;:!?]{2,}")
         matches = punct_pattern.findall(text)
 
         if len(matches) > len(text) / 100:  # More than 1% of text
             return {
-                'punctuation_density': len(matches) / len(text),
-                'sequences_found': len(matches),
+                "punctuation_density": len(matches) / len(text),
+                "sequences_found": len(matches),
             }
 
         # Check for unusual punctuation
-        unusual_punct = re.compile(r'[‐‑‒–—―]')  # Various dashes
+        unusual_punct = re.compile(r"[‐‑‒–—―]")  # Various dashes
         unusual_matches = unusual_punct.findall(text)
 
         if len(unusual_matches) > 5:
             return {
-                'unusual_punctuation_count': len(unusual_matches),
+                "unusual_punctuation_count": len(unusual_matches),
             }
 
         return None
@@ -326,10 +329,10 @@ class CovertChannelDetector:
             z_score = abs(generation_time - mean) / std_dev
             if z_score > 3.0:  # More than 3 standard deviations
                 return {
-                    'z_score': z_score,
-                    'current_time': generation_time,
-                    'mean_time': mean,
-                    'std_dev': std_dev,
+                    "z_score": z_score,
+                    "current_time": generation_time,
+                    "mean_time": mean,
+                    "std_dev": std_dev,
                 }
 
         return None
@@ -352,8 +355,8 @@ class CovertChannelDetector:
 
         if count > len(words) * 0.4 and most_common_length > 10:
             return {
-                'dominant_word_length': most_common_length,
-                'frequency': count / len(words),
+                "dominant_word_length": most_common_length,
+                "frequency": count / len(words),
             }
 
         return None
@@ -415,21 +418,20 @@ class CovertChannelDetector:
         # Remove zero-width characters
         if CovertChannelType.ZERO_WIDTH_CHARS in channel_types:
             for char in self.zero_width_chars:
-                sanitized = sanitized.replace(char, '')
+                sanitized = sanitized.replace(char, "")
 
         # Normalize whitespace
         if CovertChannelType.WHITESPACE_ENCODING in channel_types:
-            sanitized = re.sub(r'[ \t]+', ' ', sanitized)
+            sanitized = re.sub(r"[ \t]+", " ", sanitized)
 
         # Remove suspicious Unicode
         if CovertChannelType.UNICODE_STEGANOGRAPHY in channel_types:
             # Keep only common Unicode ranges
-            sanitized = ''.join(
-                c for c in sanitized
-                if ord(c) < 0x0300 or not any(
-                    start <= ord(c) <= end
-                    for start, end in self.suspicious_unicode_ranges
-                )
+            sanitized = "".join(
+                c
+                for c in sanitized
+                if ord(c) < 0x0300
+                or not any(start <= ord(c) <= end for start, end in self.suspicious_unicode_ranges)
             )
 
         return sanitized

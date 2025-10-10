@@ -3,7 +3,7 @@
 import json
 import logging
 import time
-from typing import Any, Dict, List, Optional, Callable, Union
+from typing import Any, Dict, List, Optional, Callable
 from dataclasses import dataclass, field, asdict
 from enum import Enum
 from datetime import datetime
@@ -13,6 +13,7 @@ import threading
 
 class EventType(Enum):
     """Types of security events."""
+
     PROMPT_INJECTION = "prompt_injection"
     RESOURCE_LIMIT = "resource_limit"
     PERMISSION_DENIED = "permission_denied"
@@ -25,6 +26,7 @@ class EventType(Enum):
 
 class Severity(Enum):
     """Event severity levels."""
+
     DEBUG = "debug"
     INFO = "info"
     WARNING = "warning"
@@ -35,6 +37,7 @@ class Severity(Enum):
 @dataclass
 class SecurityEvent:
     """Security event data structure."""
+
     event_type: EventType
     severity: Severity
     timestamp: float = field(default_factory=time.time)
@@ -209,7 +212,7 @@ class AnomalyDetector:
 
         mean = sum(history) / len(history)
         variance = sum((x - mean) ** 2 for x in history) / len(history)
-        std = variance ** 0.5
+        std = variance**0.5
 
         if std == 0:
             return value != mean
@@ -229,22 +232,45 @@ class MetricsCollector:
         self.lock = threading.Lock()
 
     def increment_counter(self, name: str, value: int = 1) -> None:
-        """Increment a counter metric."""
+        """
+        Increment a counter metric.
+
+        Args:
+            name: Counter name
+            value: Amount to increment (default: 1)
+        """
         with self.lock:
             self.counters[name] += value
 
     def record_timing(self, name: str, duration: float) -> None:
-        """Record a timing metric."""
+        """
+        Record a timing metric.
+
+        Args:
+            name: Timer name
+            duration: Duration in seconds
+        """
         with self.lock:
             self.timers[name].append(duration)
 
     def set_gauge(self, name: str, value: float) -> None:
-        """Set a gauge metric."""
+        """
+        Set a gauge metric.
+
+        Args:
+            name: Gauge name
+            value: Gauge value
+        """
         with self.lock:
             self.gauges[name] = value
 
     def get_metrics(self) -> Dict[str, Any]:
-        """Get all metrics."""
+        """
+        Get all metrics.
+
+        Returns:
+            Dictionary containing all counters, gauges, and timers
+        """
         with self.lock:
             metrics = {
                 "counters": dict(self.counters),
@@ -264,7 +290,11 @@ class MetricsCollector:
         return metrics
 
     def reset(self) -> None:
-        """Reset all metrics."""
+        """
+        Reset all metrics.
+
+        Clears all counters, timers, and gauges.
+        """
         with self.lock:
             self.counters.clear()
             self.timers.clear()

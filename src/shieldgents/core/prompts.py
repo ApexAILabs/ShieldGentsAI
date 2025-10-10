@@ -8,6 +8,7 @@ from dataclasses import dataclass
 
 class ThreatLevel(Enum):
     """Threat level classifications for prompt inputs."""
+
     SAFE = "safe"
     LOW = "low"
     MEDIUM = "medium"
@@ -18,6 +19,7 @@ class ThreatLevel(Enum):
 @dataclass
 class ScanResult:
     """Result of a prompt security scan."""
+
     is_safe: bool
     threat_level: ThreatLevel
     detected_patterns: List[str]
@@ -131,9 +133,7 @@ class PromptInjectionDetector:
             metadata={"pattern_matches": pattern_matches},
         )
 
-    def _calculate_threat_level(
-        self, detected_patterns: List[str], text: str
-    ) -> ThreatLevel:
+    def _calculate_threat_level(self, detected_patterns: List[str], text: str) -> ThreatLevel:
         """Calculate threat level based on detected patterns."""
         if not detected_patterns:
             return ThreatLevel.SAFE
@@ -212,7 +212,15 @@ class PromptSanitizer:
         return sanitized
 
     def _remove_special_tokens(self, text: str) -> str:
-        """Remove special model tokens and delimiters."""
+        """
+        Remove special model tokens and delimiters.
+
+        Args:
+            text: Input text to sanitize
+
+        Returns:
+            Text with special tokens removed
+        """
         tokens_to_remove = [
             r"</system>",
             r"<system>",

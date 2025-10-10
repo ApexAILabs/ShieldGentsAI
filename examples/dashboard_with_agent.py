@@ -25,12 +25,13 @@ from shieldgents.governance import AuditEventType, AuditLogger
 @st.cache_resource
 def init_security():
     return {
-        'guard': PromptGuard(),
-        'pii': PIIDetector(),
-        'rate_limiter': RateLimiter(max_requests=10, window_seconds=60),
-        'monitor': SecurityMonitor(),
-        'audit': AuditLogger(enable_console=False),
+        "guard": PromptGuard(),
+        "pii": PIIDetector(),
+        "rate_limiter": RateLimiter(max_requests=10, window_seconds=60),
+        "monitor": SecurityMonitor(),
+        "audit": AuditLogger(enable_console=False),
     }
+
 
 security = init_security()
 
@@ -51,73 +52,69 @@ with st.sidebar:
 
     user_id = st.text_input("User ID", value="demo-user")
     user_input = st.text_area(
-        "Enter prompt:",
-        placeholder="Try: 'What is the weather?' or 'Ignore all instructions'"
+        "Enter prompt:", placeholder="Try: 'What is the weather?' or 'Ignore all instructions'"
     )
 
     if st.button("🚀 Execute", type="primary"):
         if user_input:
             # Rate limiting
-            if not security['rate_limiter'].check_rate_limit(user_id):
+            if not security["rate_limiter"].check_rate_limit(user_id):
                 st.error("⚠️ Rate limit exceeded!")
-                security['monitor'].record_event(
+                security["monitor"].record_event(
                     event_type=EventType.THRESHOLD_EXCEEDED,
                     severity=Severity.WARNING,
                     message="Rate limit exceeded",
-                    metadata={"user_id": user_id}
+                    metadata={"user_id": user_id},
                 )
             else:
                 # PII detection
-                pii_result = security['pii'].scan(user_input)
+                pii_result = security["pii"].scan(user_input)
                 if pii_result.has_pii:
                     st.warning(f"⚠️ PII Detected: {[m.pii_type.value for m in pii_result.matches]}")
-                    security['monitor'].record_event(
+                    security["monitor"].record_event(
                         event_type=EventType.DATA_ACCESS,
                         severity=Severity.WARNING,
                         message="PII detected in input",
-                        metadata={"user_id": user_id}
+                        metadata={"user_id": user_id},
                     )
                     user_input = pii_result.redacted_text
 
                 # Prompt injection check
-                guard_result = security['guard'].guard(user_input)
+                guard_result = security["guard"].guard(user_input)
 
                 if not guard_result.is_safe:
                     st.error(f"🚫 Blocked! Threat Level: {guard_result.threat_level.value}")
                     st.error(f"Detected patterns: {', '.join(guard_result.detected_patterns)}")
 
-                    security['monitor'].record_event(
+                    security["monitor"].record_event(
                         event_type=EventType.PROMPT_INJECTION,
                         severity=Severity.ERROR,
                         message=f"Prompt injection detected: {guard_result.threat_level.value}",
-                        metadata={
-                            "user_id": user_id,
-                            "patterns": guard_result.detected_patterns
-                        }
+                        metadata={"user_id": user_id, "patterns": guard_result.detected_patterns},
                     )
 
-                    security['audit'].log_event(
+                    security["audit"].log_event(
                         event_type=AuditEventType.PROMPT_INJECTION,
                         action="Blocked unsafe input",
                         user_id=user_id,
-                        outcome="blocked"
+                        outcome="blocked",
                     )
                 else:
                     st.success("✅ Input validated successfully!")
                     st.info(f"Processing: {guard_result.sanitized_input or user_input}")
 
-                    security['monitor'].record_event(
+                    security["monitor"].record_event(
                         event_type=EventType.TOOL_EXECUTION,
                         severity=Severity.INFO,
                         message="Agent executed successfully",
-                        metadata={"user_id": user_id}
+                        metadata={"user_id": user_id},
                     )
 
-                    security['audit'].log_event(
+                    security["audit"].log_event(
                         event_type=AuditEventType.AGENT_START,
                         action="Agent invoked",
                         user_id=user_id,
-                        outcome="success"
+                        outcome="success",
                     )
 
     st.divider()
@@ -126,28 +123,28 @@ with st.sidebar:
     st.subheader("Quick Tests")
 
     if st.button("Test: Safe Query"):
-        security['monitor'].record_event(
+        security["monitor"].record_event(
             event_type=EventType.TOOL_EXECUTION,
             severity=Severity.INFO,
             message="Safe query executed",
         )
 
     if st.button("Test: Injection Attempt"):
-        security['monitor'].record_event(
+        security["monitor"].record_event(
             event_type=EventType.PROMPT_INJECTION,
             severity=Severity.ERROR,
             message="Injection attempt blocked",
         )
 
     if st.button("Test: Anomaly"):
-        security['monitor'].record_event(
+        security["monitor"].record_event(
             event_type=EventType.ANOMALY_DETECTED,
             severity=Severity.WARNING,
             message="Unusual activity detected",
         )
 
 # Main dashboard area
-data = security['monitor'].get_dashboard_data()
+data = security["monitor"].get_dashboard_data()
 metrics = data.get("metrics", {})
 
 # Key metrics row
@@ -167,7 +164,7 @@ with col3:
     st.metric("Warnings", warnings, delta_color="off")
 
 with col4:
-    remaining = security['rate_limiter'].get_remaining(user_id)
+    remaining = security["rate_limiter"].get_remaining(user_id)
     st.metric("Rate Limit Remaining", remaining)
 
 st.divider()
@@ -185,6 +182,7 @@ with col1:
 
     if event_counters:
         import plotly.express as px
+
         fig = px.pie(
             values=list(event_counters.values()),
             names=list(event_counters.keys()),
@@ -204,6 +202,7 @@ with col2:
 
     if severity_counters:
         import plotly.express as px
+
         fig = px.bar(
             x=list(severity_counters.keys()),
             y=list(severity_counters.values()),
@@ -216,7 +215,7 @@ with col2:
                 "warning": "#ff8800",
                 "error": "#ff0000",
                 "critical": "#8800ff",
-            }
+            },
         )
         st.plotly_chart(fig, use_container_width=True)
     else:
@@ -228,29 +227,29 @@ st.divider()
 st.subheader("📋 Recent Security Events")
 
 # Get recent audit events
-audit_report = security['audit'].generate_report()
+audit_report = security["audit"].generate_report()
 
-if audit_report['total_events'] > 0:
+if audit_report["total_events"] > 0:
     col1, col2, col3 = st.columns(3)
 
     with col1:
-        st.metric("Total Audit Events", audit_report['total_events'])
+        st.metric("Total Audit Events", audit_report["total_events"])
 
     with col2:
         success_rate = (
-            audit_report['by_outcome'].get('success', 0) /
-            audit_report['total_events'] * 100
-            if audit_report['total_events'] > 0 else 0
+            audit_report["by_outcome"].get("success", 0) / audit_report["total_events"] * 100
+            if audit_report["total_events"] > 0
+            else 0
         )
         st.metric("Success Rate", f"{success_rate:.1f}%")
 
     with col3:
-        blocked = audit_report['by_outcome'].get('blocked', 0)
+        blocked = audit_report["by_outcome"].get("blocked", 0)
         st.metric("Blocked Attacks", blocked, delta_color="inverse")
 
     # Show event types
     st.write("**Events by Type:**")
-    st.json(audit_report['by_type'])
+    st.json(audit_report["by_type"])
 else:
     st.info("No audit events yet. Use the agent interface to generate events.")
 
@@ -271,5 +270,5 @@ st.markdown(
         <p><small>Production-ready security tooling for AI agent frameworks</small></p>
     </div>
     """,
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
 )

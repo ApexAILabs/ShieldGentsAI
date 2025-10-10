@@ -71,10 +71,7 @@ class SecureLangChainAgent:
         # Security components
         self.prompt_guard = PromptGuard(auto_sanitize=auto_sanitize)
         self.pii_detector = PIIDetector()
-        self.rate_limiter = RateLimiter(
-            max_requests=max_requests_per_minute,
-            window_seconds=60
-        )
+        self.rate_limiter = RateLimiter(max_requests=max_requests_per_minute, window_seconds=60)
         self.monitor = SecurityMonitor()
         self.tool_wrapper = ToolWrapper(
             sandbox=FunctionSandbox(
