@@ -8,6 +8,7 @@ from shieldgents.integrations import (
     production,
     langchain,
     strands,
+    multi_agent_security,
 )
 from shieldgents.integrations.agent_shield import (
     AgentShield,
@@ -33,6 +34,18 @@ from shieldgents.integrations.tool_chain import (
     ToolChainMonitor,
     ToolRiskLevel,
 )
+from shieldgents.integrations.multi_agent_security import (
+    AgentRegistry,
+    SecureMessageBus,
+    ConsensusEngine,
+    ByzantineDetector,
+    AgentIdentity,
+    SecureMessage,
+    SecurityAlert,
+    MessageType,
+    TrustLevel,
+    ConsensusType,
+)
 
 __all__ = [
     # Modules
@@ -43,6 +56,7 @@ __all__ = [
     "production",
     "langchain",
     "strands",
+    "multi_agent_security",
     # AgentShield
     "AgentShield",
     "OutputCheck",
@@ -67,4 +81,15 @@ __all__ = [
     "ChainViolationType",
     "ToolChainMonitor",
     "ToolRiskLevel",
+    # Multi-Agent Security
+    "AgentRegistry",
+    "SecureMessageBus",
+    "ConsensusEngine",
+    "ByzantineDetector",
+    "AgentIdentity",
+    "SecureMessage",
+    "SecurityAlert",
+    "MessageType",
+    "TrustLevel",
+    "ConsensusType",
 ]

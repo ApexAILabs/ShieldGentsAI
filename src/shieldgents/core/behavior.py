@@ -336,6 +336,7 @@ class ToolExecutionGuard:
         recent = self.monitor.get_recent_actions(limit=10)
         for action in reversed(recent):
             if action.action_name == tool_name and action.metadata.get("outcome") == "pending":
+
                 action.metadata["outcome"] = "success" if success else "failure"
                 action.metadata["result_summary"] = str(result)[:100] if result else None
                 action.metadata["error"] = error
