@@ -20,6 +20,7 @@ import secrets
 
 class MessageType(Enum):
     """Types of inter-agent messages."""
+
     REQUEST = "request"
     RESPONSE = "response"
     BROADCAST = "broadcast"
@@ -30,6 +31,7 @@ class MessageType(Enum):
 
 class TrustLevel(Enum):
     """Trust levels for agents."""
+
     UNTRUSTED = 0
     LOW = 1
     MEDIUM = 2
@@ -39,6 +41,7 @@ class TrustLevel(Enum):
 
 class ConsensusType(Enum):
     """Types of consensus mechanisms."""
+
     SIMPLE_MAJORITY = "simple_majority"
     SUPERMAJORITY = "supermajority"
     UNANIMOUS = "unanimous"
@@ -49,6 +52,7 @@ class ConsensusType(Enum):
 @dataclass
 class AgentIdentity:
     """Represents an agent's identity and credentials."""
+
     agent_id: str
     public_key: Optional[str] = None
     trust_level: TrustLevel = TrustLevel.UNTRUSTED
@@ -60,6 +64,7 @@ class AgentIdentity:
 @dataclass
 class SecureMessage:
     """A secure message between agents."""
+
     message_id: str
     sender_id: str
     receiver_id: Optional[str]  # None for broadcast
@@ -81,13 +86,14 @@ class SecureMessage:
             "timestamp": self.timestamp.isoformat(),
             "signature": self.signature,
             "encrypted": self.encrypted,
-            "nonce": self.nonce
+            "nonce": self.nonce,
         }
 
 
 @dataclass
 class SecurityAlert:
     """Security alert for multi-agent system."""
+
     alert_type: str
     severity: str
     description: str
@@ -110,7 +116,7 @@ class AgentRegistry:
         agent_id: str,
         trust_level: TrustLevel = TrustLevel.LOW,
         capabilities: Optional[Set[str]] = None,
-        metadata: Optional[Dict[str, Any]] = None
+        metadata: Optional[Dict[str, Any]] = None,
     ) -> AgentIdentity:
         """
         Register a new agent in the system.
@@ -131,7 +137,7 @@ class AgentRegistry:
             agent_id=agent_id,
             trust_level=trust_level,
             capabilities=capabilities or set(),
-            metadata=metadata or {}
+            metadata=metadata or {},
         )
 
         self.agents[agent_id] = identity
@@ -196,7 +202,7 @@ class SecureMessageBus:
         receiver_id: Optional[str],
         message_type: MessageType,
         payload: Dict[str, Any],
-        sign: bool = True
+        sign: bool = True,
     ) -> Optional[SecureMessage]:
         """
         Send a message from one agent to another.
@@ -233,7 +239,7 @@ class SecureMessageBus:
             message_type=message_type,
             payload=payload,
             timestamp=datetime.now(),
-            nonce=nonce
+            nonce=nonce,
         )
 
         # Sign message if requested
@@ -347,7 +353,7 @@ class ConsensusEngine:
         proposer_id: str,
         proposal_data: Dict[str, Any],
         consensus_type: ConsensusType = ConsensusType.SIMPLE_MAJORITY,
-        eligible_voters: Optional[List[str]] = None
+        eligible_voters: Optional[List[str]] = None,
     ) -> bool:
         """
         Create a new proposal for consensus.
@@ -374,20 +380,14 @@ class ConsensusEngine:
             "consensus_type": consensus_type,
             "eligible_voters": eligible_voters or list(self.registry.agents.keys()),
             "created_at": datetime.now(),
-            "finalized": False
+            "finalized": False,
         }
 
         self.votes[proposal_id] = {}
 
         return True
 
-    def cast_vote(
-        self,
-        proposal_id: str,
-        voter_id: str,
-        vote: bool,
-        weight: float = 1.0
-    ) -> bool:
+    def cast_vote(self, proposal_id: str, voter_id: str, vote: bool, weight: float = 1.0) -> bool:
         """
         Cast a vote on a proposal.
 
@@ -421,7 +421,7 @@ class ConsensusEngine:
         self.votes[proposal_id][voter_id] = {
             "vote": vote,
             "weight": weight,
-            "timestamp": datetime.now()
+            "timestamp": datetime.now(),
         }
 
         return True
@@ -598,9 +598,7 @@ class ByzantineDetector:
         return self.agent_reputations.get(agent_id, 1.0)
 
     def detect_inconsistency(
-        self,
-        agent_id: str,
-        messages: List[SecureMessage]
+        self, agent_id: str, messages: List[SecureMessage]
     ) -> Optional[SecurityAlert]:
         """
         Detect inconsistent messaging from an agent.
@@ -628,7 +626,7 @@ class ByzantineDetector:
                     severity="high",
                     description=f"Agent {agent_id} sent inconsistent messages",
                     involved_agents=[agent_id],
-                    evidence={"message_count": len(messages)}
+                    evidence={"message_count": len(messages)},
                 )
 
         return None

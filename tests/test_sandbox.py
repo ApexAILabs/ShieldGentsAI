@@ -1,12 +1,10 @@
 """Tests for sandbox module."""
 
-import pytest
 import time
 from shieldgents.core.sandbox import (
     FunctionSandbox,
     ProcessSandbox,
     ResourceLimits,
-    TimeoutException,
 )
 
 

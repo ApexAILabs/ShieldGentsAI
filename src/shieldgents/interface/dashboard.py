@@ -4,8 +4,7 @@ import streamlit as st
 import plotly.graph_objects as go
 import plotly.express as px
 import pandas as pd
-from typing import Dict, Any, List, Optional
-from datetime import datetime, timedelta
+from typing import Dict, Any, List
 import time
 
 
@@ -227,9 +226,7 @@ def create_red_team_report(results: List[Any]) -> None:
 
     if failed_results:
         for result in failed_results:
-            with st.expander(
-                f"❌ {result.attack_vector.name} ({result.attack_vector.severity})"
-            ):
+            with st.expander(f"❌ {result.attack_vector.name} ({result.attack_vector.severity})"):
                 st.write(f"**Category:** {result.attack_vector.category.value}")
                 st.write(f"**Description:** {result.attack_vector.description}")
                 st.write(f"**Expected:** {result.attack_vector.expected_behavior}")

@@ -20,9 +20,7 @@ class TestAgentRegistry:
         registry = AgentRegistry()
 
         agent = registry.register_agent(
-            "agent-1",
-            trust_level=TrustLevel.HIGH,
-            capabilities={"read", "write"}
+            "agent-1", trust_level=TrustLevel.HIGH, capabilities={"read", "write"}
         )
 
         assert agent.agent_id == "agent-1"
@@ -83,7 +81,7 @@ class TestSecureMessageBus:
             sender_id="sender",
             receiver_id="receiver",
             message_type=MessageType.REQUEST,
-            payload={"data": "test"}
+            payload={"data": "test"},
         )
 
         assert message is not None
@@ -103,7 +101,7 @@ class TestSecureMessageBus:
             sender_id="sender",
             receiver_id=None,  # Broadcast
             message_type=MessageType.BROADCAST,
-            payload={"data": "broadcast"}
+            payload={"data": "broadcast"},
         )
 
         assert message is not None
@@ -122,7 +120,7 @@ class TestSecureMessageBus:
             receiver_id="receiver",
             message_type=MessageType.REQUEST,
             payload={"data": "test"},
-            sign=True
+            sign=True,
         )
 
         assert message.signature is not None
@@ -147,7 +145,7 @@ class TestSecureMessageBus:
             sender_id="sender",
             receiver_id="receiver",
             message_type=MessageType.REQUEST,
-            payload={"data": "test"}
+            payload={"data": "test"},
         )
 
         assert len(received_messages) == 1
@@ -168,7 +166,7 @@ class TestConsensusEngine:
             proposal_id="prop-1",
             proposer_id="proposer",
             proposal_data={"action": "upgrade"},
-            consensus_type=ConsensusType.SIMPLE_MAJORITY
+            consensus_type=ConsensusType.SIMPLE_MAJORITY,
         )
 
         assert success is True
@@ -183,9 +181,7 @@ class TestConsensusEngine:
         engine = ConsensusEngine(registry)
 
         engine.create_proposal(
-            proposal_id="prop-1",
-            proposer_id="proposer",
-            proposal_data={"action": "upgrade"}
+            proposal_id="prop-1", proposer_id="proposer", proposal_data={"action": "upgrade"}
         )
 
         success = engine.cast_vote("prop-1", "voter", vote=True)
@@ -204,7 +200,7 @@ class TestConsensusEngine:
             proposal_id="prop-1",
             proposer_id="agent-0",
             proposal_data={"action": "test"},
-            consensus_type=ConsensusType.SIMPLE_MAJORITY
+            consensus_type=ConsensusType.SIMPLE_MAJORITY,
         )
 
         # Cast 3 yes votes out of 5
@@ -228,7 +224,7 @@ class TestConsensusEngine:
             proposal_id="prop-1",
             proposer_id="agent-0",
             proposal_data={"action": "test"},
-            consensus_type=ConsensusType.UNANIMOUS
+            consensus_type=ConsensusType.UNANIMOUS,
         )
 
         # All vote yes
@@ -252,7 +248,7 @@ class TestConsensusEngine:
             proposal_id="prop-1",
             proposer_id="agent-0",
             proposal_data={"action": "test"},
-            consensus_type=ConsensusType.UNANIMOUS
+            consensus_type=ConsensusType.UNANIMOUS,
         )
 
         # One no vote
@@ -276,7 +272,7 @@ class TestConsensusEngine:
             proposal_id="prop-1",
             proposer_id="agent-0",
             proposal_data={"action": "test"},
-            consensus_type=ConsensusType.BYZANTINE_FAULT_TOLERANT
+            consensus_type=ConsensusType.BYZANTINE_FAULT_TOLERANT,
         )
 
         # BFT requires 2f+1 votes where f=(n-1)/3

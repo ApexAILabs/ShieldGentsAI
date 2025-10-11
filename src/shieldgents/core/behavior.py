@@ -18,6 +18,7 @@ import time
 
 class ActionType(Enum):
     """Types of actions an agent can take."""
+
     TOOL_CALL = "tool_call"
     DATA_READ = "data_read"
     DATA_WRITE = "data_write"
@@ -30,6 +31,7 @@ class ActionType(Enum):
 
 class RiskLevel(Enum):
     """Risk levels for agent actions."""
+
     SAFE = "safe"
     LOW = "low"
     MEDIUM = "medium"
@@ -40,6 +42,7 @@ class RiskLevel(Enum):
 @dataclass
 class AgentAction:
     """Represents an action taken by an agent."""
+
     action_type: ActionType
     action_name: str
     parameters: Dict[str, Any]
@@ -52,6 +55,7 @@ class AgentAction:
 @dataclass
 class BehaviorPolicy:
     """Policy defining allowed/forbidden agent behaviors."""
+
     name: str
 
     # Tool restrictions
@@ -171,15 +175,14 @@ class BehaviorMonitor:
         one_minute_ago = now - 60
 
         action_key = f"{action.action_type.value}:{action.action_name}"
-        recent_actions = [
-            t for t in self.action_counts.get(action_key, [])
-            if t > one_minute_ago
-        ]
+        recent_actions = [t for t in self.action_counts.get(action_key, []) if t > one_minute_ago]
 
         # Check specific rate limits
         if action.action_type == ActionType.TOOL_CALL:
             if len(recent_actions) >= self.policy.max_tool_calls_per_minute:
-                return f"Tool call rate limit exceeded ({self.policy.max_tool_calls_per_minute}/min)"
+                return (
+                    f"Tool call rate limit exceeded ({self.policy.max_tool_calls_per_minute}/min)"
+                )
 
         elif action.action_type == ActionType.API_CALL:
             if len(recent_actions) >= self.policy.max_api_calls_per_minute:
@@ -204,7 +207,7 @@ class BehaviorMonitor:
             return False
 
         for i in range(len(actions) - len(pattern) + 1):
-            if actions[i:i+len(pattern)] == pattern:
+            if actions[i : i + len(pattern)] == pattern:
                 return True
 
         return False
@@ -236,10 +239,11 @@ class OutputGuard:
         # 1. Check length
         if len(output) > self.policy.max_output_length:
             violations.append(f"Output too long: {len(output)} > {self.policy.max_output_length}")
-            output = output[:self.policy.max_output_length] + "... [truncated]"
+            output = output[: self.policy.max_output_length] + "... [truncated]"
 
         # 2. Check forbidden patterns
         import re
+
         for pattern in self.policy.forbidden_output_patterns:
             if re.search(pattern, output, re.IGNORECASE):
                 violations.append(f"Output contains forbidden pattern: {pattern}")
@@ -256,7 +260,7 @@ class OutputGuard:
         ]
         for pattern in sensitive_patterns:
             if re.search(pattern, output, re.IGNORECASE):
-                violations.append(f"Output may contain sensitive data")
+                violations.append("Output may contain sensitive data")
                 output = re.sub(pattern, "[SENSITIVE DATA REDACTED]", output, flags=re.IGNORECASE)
 
         return {
@@ -331,8 +335,7 @@ class ToolExecutionGuard:
         # Find the pending action and update it
         recent = self.monitor.get_recent_actions(limit=10)
         for action in reversed(recent):
-            if (action.action_name == tool_name and
-                action.metadata.get("outcome") == "pending"):
+            if action.action_name == tool_name and action.metadata.get("outcome") == "pending":
 
                 action.metadata["outcome"] = "success" if success else "failure"
                 action.metadata["result_summary"] = str(result)[:100] if result else None
@@ -398,7 +401,7 @@ def create_secure_agent_wrapper(
                 "behavioral_checks": {
                     "actions_monitored": len(monitor.action_history),
                     "recent_actions": [a.action_name for a in monitor.get_recent_actions(5)],
-                }
+                },
             }
 
         except Exception as e:
