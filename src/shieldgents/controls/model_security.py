@@ -86,7 +86,7 @@ class ModelInversionDetector:
             Alert if attack detected
         """
         now = time.time()
-        query_hash = self._hash_query(query)
+        _ = self._hash_query(query)  # Hash for potential future use
 
         # Clean old queries
         self._clean_old_queries(user_id, now)

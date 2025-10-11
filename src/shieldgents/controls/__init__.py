@@ -57,6 +57,23 @@ from shieldgents.controls.content_safety import (
     ContentSafetyAlert,
     MisuseType,
 )
+from shieldgents.controls.hallucination_detection import (
+    HallucinationDetector,
+    KnowledgeBase,
+    ConfidenceScorer,
+    HallucinationAlert,
+    HallucinationType,
+    FactEntry,
+)
+from shieldgents.controls.model_drift import (
+    ModelDriftDetector,
+    ModelIntegrityMonitor,
+    ModelVersionControl,
+    DriftAlert,
+    IntegrityAlert,
+    DriftType,
+    IntegrityThreat,
+)
 
 __all__ = [
     # Access control
@@ -107,4 +124,19 @@ __all__ = [
     "ContentSafetyFilter",
     "ContentSafetyAlert",
     "MisuseType",
+    # Hallucination detection
+    "HallucinationDetector",
+    "KnowledgeBase",
+    "ConfidenceScorer",
+    "HallucinationAlert",
+    "HallucinationType",
+    "FactEntry",
+    # Model drift and integrity
+    "ModelDriftDetector",
+    "ModelIntegrityMonitor",
+    "ModelVersionControl",
+    "DriftAlert",
+    "IntegrityAlert",
+    "DriftType",
+    "IntegrityThreat",
 ]

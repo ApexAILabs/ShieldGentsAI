@@ -160,7 +160,15 @@ class ProcessSandbox:
             )
 
     def _monitor_process(self, process: subprocess.Popen) -> None:
-        """Monitor process resource usage and enforce limits."""
+        """
+        Monitor process resource usage and enforce limits.
+
+        Args:
+            process: subprocess.Popen process to monitor
+
+        Raises:
+            ResourceLimitException: If resource limits are exceeded
+        """
         try:
             ps_process = psutil.Process(process.pid)
 
@@ -190,7 +198,12 @@ class ProcessSandbox:
             pass
 
     def _kill_process_tree(self, pid: int) -> None:
-        """Kill a process and all its children."""
+        """
+        Kill a process and all its children.
+
+        Args:
+            pid: Process ID to kill
+        """
         try:
             parent = psutil.Process(pid)
             children = parent.children(recursive=True)

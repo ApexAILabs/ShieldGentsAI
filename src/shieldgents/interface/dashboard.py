@@ -33,7 +33,7 @@ def create_dashboard(monitor: Any) -> None:
         st.divider()
 
         st.header("Filters")
-        severity_filter = st.multiselect(
+        _ = st.multiselect(
             "Severity Levels",
             ["debug", "info", "warning", "error", "critical"],
             default=["warning", "error", "critical"],

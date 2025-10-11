@@ -285,7 +285,6 @@ class ToolChainMonitor:
 
             # Check if found credentials then used them
             current_params_str = str(recent_calls[i].parameters).lower()
-            next_params_str = str(recent_calls[i + 1].parameters).lower()
 
             for keyword1, keyword2 in lateral_keywords:
                 if keyword1 in current_tool.lower() and keyword2 in current_params_str:

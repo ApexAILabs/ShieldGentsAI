@@ -7,7 +7,11 @@ import sys
 
 
 def print_banner() -> None:
-    """Print startup banner."""
+    """
+    Print startup banner.
+
+    Displays ShieldGents ASCII logo and version information.
+    """
     from shieldgents.assets import get_logo_text
     from shieldgents import __version__
 
@@ -21,7 +25,11 @@ def print_banner() -> None:
 
 
 def main() -> None:
-    """Main CLI entry point."""
+    """
+    Main CLI entry point.
+
+    Handles command-line arguments and routes to appropriate commands.
+    """
     if len(sys.argv) < 2:
         print_banner()
         print("Available commands:")

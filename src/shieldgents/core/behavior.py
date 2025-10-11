@@ -371,7 +371,7 @@ def create_secure_agent_wrapper(
         Wrapped agent function
     """
     monitor = BehaviorMonitor(policy)
-    tool_guard = ToolExecutionGuard(monitor)
+    _ = ToolExecutionGuard(monitor)  # Initialize guard
     output_guard = OutputGuard(policy)
 
     def secure_agent(prompt: str, agent_id: str = "default") -> Dict[str, Any]:

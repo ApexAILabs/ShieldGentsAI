@@ -107,7 +107,7 @@ def example_monitor_agent_actions():
     )
 
     monitor = BehaviorMonitor(policy)
-    tool_guard = ToolExecutionGuard(monitor)
+    _ = ToolExecutionGuard(monitor)  # Initialize guard
 
     print("📋 Policy configured:")
     print(f"   Allowed tools: {policy.allowed_tools}")

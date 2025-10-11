@@ -105,8 +105,8 @@ def example_access_control() -> None:
     setup_default_roles(acl)
 
     # Create users
-    admin = acl.create_user("user-1", "alice", roles={"admin"})
-    viewer = acl.create_user("user-2", "bob", roles={"viewer"})
+    acl.create_user("user-1", "alice", roles={"admin"})
+    acl.create_user("user-2", "bob", roles={"viewer"})
 
     # Check permissions
     print(f"Alice (admin) can write: {acl.check_permission('user-1', 'write')}")
